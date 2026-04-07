@@ -57,6 +57,7 @@ def lambda_handler(event, context):
             settings['facebook_connected'] = fb_secret is not None
             if fb_secret:
                 settings['facebook_page_id'] = fb_secret.get('page_id', '')
+            # instagram_account_id vine direct din DynamoDB (deja în settings dict)
             return {'statusCode': 200, 'headers': CORS_HEADERS, 'body': json.dumps(settings, default=str)}
 
         elif method == 'POST':
@@ -69,6 +70,14 @@ def lambda_handler(event, context):
                     Key={'PK': f'TENANT#{tenant_id}', 'SK': 'SETTINGS'},
                     UpdateExpression='SET facebook_page_id = :pid',
                     ExpressionAttributeValues={':pid': body.get('page_id', '')}
+                )
+                return {'statusCode': 200, 'headers': CORS_HEADERS, 'body': json.dumps({'success': True})}
+
+            if action == 'save_instagram':
+                table.update_item(
+                    Key={'PK': f'TENANT#{tenant_id}', 'SK': 'SETTINGS'},
+                    UpdateExpression='SET instagram_account_id = :igid',
+                    ExpressionAttributeValues={':igid': body.get('instagram_account_id', '')}
                 )
                 return {'statusCode': 200, 'headers': CORS_HEADERS, 'body': json.dumps({'success': True})}
 

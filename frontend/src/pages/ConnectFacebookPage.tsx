@@ -14,7 +14,9 @@ export default function ConnectFacebookPage() {
   const [fbStatus, setFbStatus] = useState<'disconnected' | 'connecting' | 'connected'>('disconnected')
   const [pageId, setPageId] = useState('')
   const [pageToken, setPageToken] = useState('')
+  const [igAccountId, setIgAccountId] = useState('')
   const [saving, setSaving] = useState(false)
+  const [savingIg, setSavingIg] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
@@ -28,6 +30,9 @@ export default function ConnectFacebookPage() {
           if (data.facebook_connected) {
             setFbStatus('connected')
             setPageId(data.facebook_page_id || '')
+          }
+          if (data.instagram_account_id) {
+            setIgAccountId(data.instagram_account_id)
           }
         }
       } catch (e) {
@@ -67,6 +72,36 @@ export default function ConnectFacebookPage() {
       setError('Eroare de conexiune.')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const saveInstagram = async () => {
+    if (!igAccountId.trim()) {
+      setError('Introdu Instagram Account ID')
+      return
+    }
+    setSavingIg(true)
+    setError('')
+    try {
+      const headers = await getAuthHeader()
+      const res = await fetch(`${API_URL}/settings`, {
+        method: 'POST',
+        headers: { ...headers, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'save_instagram',
+          instagram_account_id: igAccountId,
+        })
+      })
+      if (res.ok) {
+        setSuccess('Instagram Account ID salvat!')
+        setTimeout(() => setSuccess(''), 3000)
+      } else {
+        setError('Eroare la salvare. Încearcă din nou.')
+      }
+    } catch (e) {
+      setError('Eroare de conexiune.')
+    } finally {
+      setSavingIg(false)
     }
   }
 
@@ -247,12 +282,46 @@ export default function ConnectFacebookPage() {
                 }}>● Conectat automat</span>
               )}
             </div>
-            <p style={{ fontSize: 13, color: '#6b7280' }}>
+            <p style={{ fontSize: 13, color: '#6b7280', marginBottom: fbStatus === 'connected' ? 16 : 0 }}>
               {fbStatus === 'connected'
-                ? 'Conectat prin pagina Facebook. Postările pe Instagram folosesc același token.'
+                ? 'Conectat prin pagina Facebook. Introdu Instagram Business Account ID pentru a activa postarea.'
                 : 'Se conectează automat după conectarea Facebook-ului.'
               }
             </p>
+            {fbStatus === 'connected' && (
+              <div>
+                <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#374151', marginBottom: 6 }}>
+                  Instagram Business Account ID
+                </label>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input
+                    type="text"
+                    value={igAccountId}
+                    onChange={e => setIgAccountId(e.target.value)}
+                    placeholder="17841400000000000"
+                    style={{
+                      flex: 1, padding: '10px 12px', border: '1px solid #d1d5db',
+                      borderRadius: 8, fontSize: 13, outline: 'none',
+                      fontFamily: 'monospace',
+                    }}
+                  />
+                  <button
+                    onClick={saveInstagram}
+                    disabled={savingIg}
+                    style={{
+                      padding: '10px 16px', background: savingIg ? '#93c5fd' : '#3b82f6',
+                      color: '#fff', border: 'none', borderRadius: 8, fontSize: 13,
+                      fontWeight: 600, cursor: savingIg ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {savingIg ? 'Se salvează...' : 'Salvează'}
+                  </button>
+                </div>
+                <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 6 }}>
+                  Găsești ID-ul în Facebook Business Manager sau via Graph API: GET /{'{page-id}'}?fields=instagram_business_account
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
