@@ -2,6 +2,7 @@ import { type Page } from '../App'
 
 const nav = [
   { id: 'dashboard', label: 'Dashboard', icon: '▦' },
+  { id: 'creator', label: 'Creator postări', icon: '✦' },
   { id: 'connect', label: 'Facebook / Instagram', icon: '⇄' },
   { id: 'videos', label: 'Videouri', icon: '▶' },
   { id: 'posts', label: 'Istoric postări', icon: '≡' },

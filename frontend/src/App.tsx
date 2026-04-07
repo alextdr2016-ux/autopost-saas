@@ -7,9 +7,10 @@ import ConnectFacebookPage from './pages/ConnectFacebookPage'
 import VideosPage from './pages/VideosPage'
 import SettingsPage from './pages/SettingsPage'
 import PostsPage from './pages/PostsPage'
+import CreatorPage from './pages/CreatorPage'
 import Sidebar from './components/Sidebar'
 
-export type Page = 'dashboard' | 'connect' | 'videos' | 'settings' | 'posts'
+export type Page = 'dashboard' | 'connect' | 'videos' | 'settings' | 'posts' | 'creator'
 
 export default function App() {
   const [loggedIn, setLoggedIn] = useState(false)
@@ -52,6 +53,7 @@ export default function App() {
         {page === 'connect' && <ConnectFacebookPage />}
         {page === 'videos' && <VideosPage />}
         {page === 'posts' && <PostsPage />}
+        {page === 'creator' && <CreatorPage />}
         {page === 'settings' && <SettingsPage />}
       </main>
     </div>

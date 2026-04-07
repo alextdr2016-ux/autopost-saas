@@ -139,4 +139,51 @@ def lambda_handler(event, context):
                 table.delete_item(Key={'PK': f'TENANT#{tenant_id}', 'SK': f'VIDEO#{video_id}'})
             return {'statusCode': 200, 'headers': CORS_HEADERS, 'body': json.dumps({'success': True})}
 
+    # ── /post-image ────────────────────────────────────────
+    elif '/post-image' in path:
+        if method == 'POST':
+            body = json.loads(event.get('body', '{}'))
+            image_base64 = body.get('image_base64', '')
+            caption = body.get('caption', '')
+
+            if not image_base64:
+                return {'statusCode': 400, 'headers': CORS_HEADERS, 'body': json.dumps({'error': 'Imagine lipsă'})}
+
+            fb_secret = get_facebook_secret(tenant_id)
+            if not fb_secret:
+                return {'statusCode': 400, 'headers': CORS_HEADERS, 'body': json.dumps({'error': 'Facebook neconectat'})}
+
+            page_id = fb_secret.get('page_id', '')
+            page_token = fb_secret.get('page_access_token', '')
+
+            # Upload imagine pe Facebook via Graph API
+            import urllib.request
+            import urllib.parse
+            import base64
+
+            image_bytes = base64.b64decode(image_base64)
+
+            # Multipart form upload
+            boundary = 'AutoPostBoundary'
+            body_parts = []
+            body_parts.append(f'--{boundary}\r\nContent-Disposition: form-data; name="access_token"\r\n\r\n{page_token}'.encode())
+            body_parts.append(f'--{boundary}\r\nContent-Disposition: form-data; name="caption"\r\n\r\n{caption}'.encode())
+            body_parts.append(f'--{boundary}\r\nContent-Disposition: form-data; name="source"; filename="post.jpg"\r\nContent-Type: image/jpeg\r\n\r\n'.encode() + image_bytes)
+            body_parts.append(f'--{boundary}--'.encode())
+            multipart_body = b'\r\n'.join(body_parts)
+
+            req = urllib.request.Request(
+                f'https://graph.facebook.com/v19.0/{page_id}/photos',
+                data=multipart_body,
+                headers={'Content-Type': f'multipart/form-data; boundary={boundary}'},
+                method='POST'
+            )
+            try:
+                with urllib.request.urlopen(req) as resp:
+                    result = json.loads(resp.read())
+                return {'statusCode': 200, 'headers': CORS_HEADERS, 'body': json.dumps({'success': True, 'post_id': result.get('id')})}
+            except urllib.error.HTTPError as e:
+                error_body = json.loads(e.read())
+                return {'statusCode': 400, 'headers': CORS_HEADERS, 'body': json.dumps({'error': error_body.get('error', {}).get('message', 'Eroare Facebook')})}
+
     return {'statusCode': 404, 'headers': CORS_HEADERS, 'body': 'Not found'}
