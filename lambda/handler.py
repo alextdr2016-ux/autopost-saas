@@ -329,4 +329,52 @@ def lambda_handler(event, context):
                 })
             return {'statusCode': 200, 'headers': CORS_HEADERS, 'body': json.dumps(posts, default=str)}
 
+    # ── /scheduled ────────────────────────────────────────
+    elif '/scheduled' in path:
+        if method == 'GET':
+            response = table.query(
+                KeyConditionExpression=Key('PK').eq(f'TENANT#{tenant_id}') & Key('SK').begins_with('SCHEDULED#'),
+                ScanIndexForward=False,
+                Limit=100,
+            )
+            items = response.get('Items', [])
+            posts = [{
+                'sk': item['SK'],
+                'scheduled_at': item.get('scheduled_at', ''),
+                'caption': item.get('caption', ''),
+                'post_type': item.get('post_type', 'feed'),
+                'status': item.get('status', 'pending'),
+                'error': item.get('error', ''),
+            } for item in items]
+            return {'statusCode': 200, 'headers': CORS_HEADERS, 'body': json.dumps(posts, default=str)}
+
+        elif method == 'POST':
+            body = json.loads(event.get('body', '{}'))
+            scheduled_at = body.get('scheduled_at', '')
+            caption = body.get('caption', '')
+            post_type = body.get('post_type', 'feed')
+
+            if not scheduled_at or not caption:
+                return {'statusCode': 400, 'headers': CORS_HEADERS, 'body': json.dumps({'error': 'scheduled_at și caption sunt obligatorii'})}
+
+            post_id = str(uuid.uuid4())[:8]
+            sk = f'SCHEDULED#{scheduled_at}#{post_id}'
+            table.put_item(Item={
+                'PK': f'TENANT#{tenant_id}',
+                'SK': sk,
+                'scheduled_at': scheduled_at,
+                'caption': caption,
+                'post_type': post_type,
+                'status': 'pending',
+            })
+            return {'statusCode': 200, 'headers': CORS_HEADERS, 'body': json.dumps({'success': True, 'sk': sk})}
+
+        elif method == 'DELETE':
+            body = json.loads(event.get('body', '{}'))
+            sk = body.get('sk', '')
+            if not sk or not sk.startswith('SCHEDULED#'):
+                return {'statusCode': 400, 'headers': CORS_HEADERS, 'body': json.dumps({'error': 'SK invalid'})}
+            table.delete_item(Key={'PK': f'TENANT#{tenant_id}', 'SK': sk})
+            return {'statusCode': 200, 'headers': CORS_HEADERS, 'body': json.dumps({'success': True})}
+
     return {'statusCode': 404, 'headers': CORS_HEADERS, 'body': 'Not found'}

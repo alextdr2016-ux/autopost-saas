@@ -8,9 +8,10 @@ import VideosPage from './pages/VideosPage'
 import SettingsPage from './pages/SettingsPage'
 import PostsPage from './pages/PostsPage'
 import CreatorPage from './pages/CreatorPage'
+import SchedulePage from './pages/SchedulePage'
 import Sidebar from './components/Sidebar'
 
-export type Page = 'dashboard' | 'connect' | 'videos' | 'settings' | 'posts' | 'creator'
+export type Page = 'dashboard' | 'connect' | 'videos' | 'settings' | 'posts' | 'creator' | 'schedule'
 
 const API_URL = import.meta.env.VITE_API_URL
 
@@ -76,6 +77,7 @@ export default function App() {
         {page === 'videos' && <VideosPage />}
         {page === 'posts' && <PostsPage />}
         {page === 'creator' && <CreatorPage />}
+        {page === 'schedule' && <SchedulePage />}
         {page === 'settings' && <SettingsPage />}
       </main>
     </div>

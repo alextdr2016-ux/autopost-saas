@@ -120,7 +120,7 @@ export default function SettingsPage() {
     setTimes(prev => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t].sort())
   }
 
-  const allTimes = ['07:00', '09:00', '12:00', '15:00', '18:00', '20:00', '22:00']
+  const allTimes = Array.from({ length: 17 }, (_, i) => `${String(i + 7).padStart(2, '0')}:00`)
 
   if (loading) {
     return (
@@ -280,7 +280,7 @@ export default function SettingsPage() {
         <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 16 }}>
           Alege orele la care se vor face postările. Selectate: {times.join(', ')}
         </p>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 6, marginBottom: 16 }}>
           {allTimes.map(t => {
             const active = times.includes(t)
             return (
@@ -288,11 +288,11 @@ export default function SettingsPage() {
                 key={t}
                 onClick={() => toggleTime(t)}
                 style={{
-                  padding: '8px 14px', borderRadius: 7, fontSize: 13, fontWeight: 600,
+                  padding: '7px 4px', borderRadius: 7, fontSize: 12, fontWeight: 600,
                   border: active ? '2px solid #3b82f6' : '1px solid #d1d5db',
                   background: active ? '#eff6ff' : '#fff',
                   color: active ? '#1d4ed8' : '#374151',
-                  cursor: 'pointer', fontFamily: 'monospace',
+                  cursor: 'pointer', fontFamily: 'monospace', textAlign: 'center',
                 }}
               >{t}</button>
             )
