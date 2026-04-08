@@ -1101,6 +1101,14 @@ export default function CreatorPage() {
   const [success, setSuccess] = useState('')
   const [error, setError] = useState('')
 
+  // ── Programare ──
+  const [showSchedule, setShowSchedule] = useState(false)
+  const [schedDate, setSchedDate] = useState(new Date().toISOString().split('T')[0])
+  const [schedHour, setSchedHour] = useState('09:00')
+  const [scheduling, setScheduling] = useState(false)
+  const [schedSuccess, setSchedSuccess] = useState('')
+  const SCHED_HOURS = Array.from({ length: 17 }, (_, i) => `${String(i + 7).padStart(2, '0')}:00`)
+
   // ── Left panel tabs ──
   const [leftTab, setLeftTab] = useState<'editor' | 'queue'>('editor')
 
@@ -1293,6 +1301,43 @@ export default function CreatorPage() {
       setTimeout(() => setError(''), 4000)
     }
     setImageUrlLoading(false)
+  }
+
+  const schedulePost = async () => {
+    if (!canvasRef.current) return
+    setScheduling(true)
+    setError('')
+    try {
+      const blob = await new Promise<Blob>((resolve) => {
+        canvasRef.current!.toBlob((b) => resolve(b!), 'image/jpeg', 0.92)
+      })
+      const reader = new FileReader()
+      reader.readAsDataURL(blob)
+      reader.onload = async () => {
+        const base64 = (reader.result as string).split(',')[1]
+        const headers = await getAuthHeader()
+        const postCaption = caption || `${productName}${productPrice ? ' — ' + productPrice : ''}${promoText ? '\n' + promoText : ''}`
+        const postType = format === 'stories' ? 'story' : 'feed'
+        const scheduled_at = `${schedDate}T${schedHour}:00`
+        const res = await fetch(`${API_URL}/scheduled`, {
+          method: 'POST',
+          headers: { ...headers, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ scheduled_at, caption: postCaption, post_type: postType, image_base64: base64 })
+        })
+        if (res.ok) {
+          setSchedSuccess(`Programat pentru ${schedDate} la ${schedHour}!`)
+          setShowSchedule(false)
+          setTimeout(() => setSchedSuccess(''), 4000)
+        } else {
+          const data = await res.json()
+          setError(data.error || 'Eroare la programare')
+        }
+        setScheduling(false)
+      }
+    } catch {
+      setError('Eroare de conexiune.')
+      setScheduling(false)
+    }
   }
 
   const downloadImage = () => {
@@ -1859,11 +1904,76 @@ export default function CreatorPage() {
               style={{ flex: 1, padding: '10px', background: posting ? '#93c5fd' : '#1877f2', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: posting ? 'not-allowed' : 'pointer' }}>
               {posting ? 'Se postează...' : format === 'stories' ? '📤 Publică Story' : '📤 Postează pe Feed'}
             </button>
+            <button onClick={() => setShowSchedule(true)}
+              style={{ padding: '10px 14px', background: '#fff', color: '#374151', border: '1px solid #e5e7eb', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
+              title="Programează postarea">
+              🗓
+            </button>
             <button onClick={downloadImage}
               style={{ padding: '10px 14px', background: '#fff', color: '#374151', border: '1px solid #e5e7eb', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>
               ⬇
             </button>
           </div>
+
+          {schedSuccess && (
+            <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '8px 12px', marginTop: 8, fontSize: 12, color: '#15803d', fontWeight: 500 }}>
+              ✓ {schedSuccess}
+            </div>
+          )}
+
+          {/* ── Modal programare ── */}
+          {showSchedule && (
+            <div style={{
+              position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
+            }}>
+              <div style={{ background: '#fff', borderRadius: 12, padding: 28, width: 340, boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+                <div style={{ fontSize: 16, fontWeight: 700, color: '#111827', marginBottom: 4 }}>Programează postarea</div>
+                <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 20 }}>
+                  {format === 'stories' ? 'Story' : 'Feed'} • imaginea curentă din Creator
+                </div>
+
+                <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: '#374151', marginBottom: 4 }}>Data</label>
+                    <input
+                      type="date"
+                      value={schedDate}
+                      min={new Date().toISOString().split('T')[0]}
+                      onChange={e => setSchedDate(e.target.value)}
+                      style={{ width: '100%', padding: '8px 10px', border: '1px solid #d1d5db', borderRadius: 7, fontSize: 13, outline: 'none', boxSizing: 'border-box' }}
+                    />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: '#374151', marginBottom: 4 }}>Ora</label>
+                    <select
+                      value={schedHour}
+                      onChange={e => setSchedHour(e.target.value)}
+                      style={{ width: '100%', padding: '8px 10px', border: '1px solid #d1d5db', borderRadius: 7, fontSize: 13, outline: 'none', background: '#fff', boxSizing: 'border-box' }}
+                    >
+                      {SCHED_HOURS.map(h => <option key={h} value={h}>{h}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button
+                    onClick={() => setShowSchedule(false)}
+                    style={{ flex: 1, padding: '10px', background: '#f3f4f6', color: '#374151', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
+                  >
+                    Anulează
+                  </button>
+                  <button
+                    onClick={schedulePost}
+                    disabled={scheduling}
+                    style={{ flex: 2, padding: '10px', background: scheduling ? '#93c5fd' : '#3b82f6', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: scheduling ? 'not-allowed' : 'pointer' }}
+                  >
+                    {scheduling ? 'Se programează...' : `Programează pentru ${schedHour}`}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           </div>} {/* end editor tab */}
         </div>

@@ -345,20 +345,32 @@ def lambda_handler(event, context):
             scheduled_at = body.get('scheduled_at', '')
             caption = body.get('caption', '')
             post_type = body.get('post_type', 'feed')
+            image_base64 = body.get('image_base64', '')
 
             if not scheduled_at or not caption:
                 return {'statusCode': 400, 'headers': CORS_HEADERS, 'body': json.dumps({'error': 'scheduled_at și caption sunt obligatorii'})}
 
             post_id = str(uuid.uuid4())[:8]
             sk = f'SCHEDULED#{scheduled_at}#{post_id}'
-            table.put_item(Item={
+
+            # Dacă are imagine, o salvăm pe S3
+            s3_key = ''
+            if image_base64:
+                import base64 as b64lib, time as time_mod
+                image_bytes = b64lib.b64decode(image_base64)
+                s3_key = f'scheduled/{tenant_id}/{post_id}.jpg'
+                s3.put_object(Bucket=BUCKET, Key=s3_key, Body=image_bytes, ContentType='image/jpeg')
+
+            item = {
                 'PK': f'TENANT#{tenant_id}',
                 'SK': sk,
                 'scheduled_at': scheduled_at,
                 'caption': caption,
                 'post_type': post_type,
                 'status': 'pending',
-            })
+                's3_key': s3_key,
+            }
+            table.put_item(Item=item)
             return {'statusCode': 200, 'headers': CORS_HEADERS, 'body': json.dumps({'success': True, 'sk': sk})}
 
         elif method == 'DELETE':
