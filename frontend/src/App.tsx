@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { fetchAuthSession, signOut } from 'aws-amplify/auth'
 import './index.css'
-import LoginPage from './pages/LoginPage'
+import LandingPage from './pages/LandingPage'
 import DashboardPage from './pages/DashboardPage'
 import ConnectFacebookPage from './pages/ConnectFacebookPage'
 import VideosPage from './pages/VideosPage'
@@ -65,7 +65,7 @@ export default function App() {
   }
 
   if (!loggedIn) {
-    return <LoginPage onLogin={() => setLoggedIn(true)} />
+    return <LandingPage onLogin={() => setLoggedIn(true)} />
   }
 
   return (
