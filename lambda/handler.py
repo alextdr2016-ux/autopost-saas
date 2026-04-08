@@ -192,34 +192,26 @@ def lambda_handler(event, context):
             image_bytes = base64.b64decode(image_base64)
 
             if post_type == 'story':
-                # ── STORY: upload pe S3 → URL public → photo_stories API ──
-                import time
-                s3_key = f'stories/{tenant_id}/{int(time.time())}.jpg'
-                print(f'[STORY] Uploading to S3: {s3_key}, size={len(image_bytes)} bytes')
-                s3.put_object(
-                    Bucket=BUCKET,
-                    Key=s3_key,
-                    Body=image_bytes,
-                    ContentType='image/jpeg',
-                )
-                # Generează URL presemnat (1 oră valabilitate)
-                photo_url = s3.generate_presigned_url(
-                    'get_object',
-                    Params={'Bucket': BUCKET, 'Key': s3_key},
-                    ExpiresIn=3600
-                )
-                print(f'[STORY] S3 presigned URL generated, page_id={page_id}')
+                # ── STORY: upload direct multipart la Facebook photo_stories ──
+                import urllib.request, urllib.error, base64
+                print(f'[STORY] Direct upload to FB photo_stories, page_id={page_id}, size={len(image_bytes)} bytes')
 
-                # Apelează Facebook photo_stories API
-                story_data = urllib.parse.urlencode({
-                    'photo_url': photo_url,
-                    'access_token': page_token,
-                }).encode()
-                fb_url = f'https://graph.facebook.com/v19.0/{page_id}/photo_stories'
+                boundary = 'AutoPostStoryBoundary'
+                body_parts = []
+                body_parts.append(f'--{boundary}\r\nContent-Disposition: form-data; name="access_token"\r\n\r\n{page_token}'.encode())
+                body_parts.append(
+                    f'--{boundary}\r\nContent-Disposition: form-data; name="source"; filename="story.jpg"\r\nContent-Type: image/jpeg\r\n\r\n'.encode()
+                    + image_bytes
+                )
+                body_parts.append(f'--{boundary}--'.encode())
+                multipart_body = b'\r\n'.join(body_parts)
+
+                fb_url = f'https://graph.facebook.com/v21.0/{page_id}/photo_stories'
                 print(f'[STORY] Calling FB API: {fb_url}')
                 req = urllib.request.Request(
                     fb_url,
-                    data=story_data,
+                    data=multipart_body,
+                    headers={'Content-Type': f'multipart/form-data; boundary={boundary}'},
                     method='POST'
                 )
                 try:
@@ -231,7 +223,7 @@ def lambda_handler(event, context):
                     error_body = json.loads(e.read())
                     fb_error = error_body.get('error', {})
                     print(f'[STORY] FB Error: {error_body}')
-                    return {'statusCode': 400, 'headers': CORS_HEADERS, 'body': json.dumps({'error': fb_error.get('message', 'Eroare Facebook Story')})}
+                    return {'statusCode': 400, 'headers': CORS_HEADERS, 'body': json.dumps({'error': fb_error.get('message', 'Eroare Facebook Story'), 'fb_code': fb_error.get('code')})}
             else:
                 # ── FEED: upload direct pe Facebook photos API ──
                 boundary = 'AutoPostBoundary'
@@ -243,7 +235,7 @@ def lambda_handler(event, context):
                 multipart_body = b'\r\n'.join(body_parts)
 
                 req = urllib.request.Request(
-                    f'https://graph.facebook.com/v19.0/{page_id}/photos',
+                    f'https://graph.facebook.com/v21.0/{page_id}/photos',
                     data=multipart_body,
                     headers={'Content-Type': f'multipart/form-data; boundary={boundary}'},
                     method='POST'
