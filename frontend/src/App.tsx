@@ -12,31 +12,53 @@ import Sidebar from './components/Sidebar'
 
 export type Page = 'dashboard' | 'connect' | 'videos' | 'settings' | 'posts' | 'creator'
 
+const API_URL = import.meta.env.VITE_API_URL
+
 export default function App() {
   const [loggedIn, setLoggedIn] = useState(false)
   const [checking, setChecking] = useState(true)
   const [page, setPage] = useState<Page>('dashboard')
+  const [theme, setTheme] = useState<'light' | 'dark'>('light')
+  const [fbConnected, setFbConnected] = useState(false)
 
   useEffect(() => {
     fetchAuthSession()
       .then(session => {
         if (session.tokens?.idToken) {
           setLoggedIn(true)
+          // Check Facebook connection status
+          const token = session.tokens.idToken.toString()
+          fetch(`${API_URL}/settings`, { headers: { Authorization: `Bearer ${token}` } })
+            .then(r => r.json())
+            .then(data => {
+              if (data.facebook_connected || data.facebook_page_id) setFbConnected(true)
+            })
+            .catch(() => {})
         }
       })
       .catch(() => {})
       .finally(() => setChecking(false))
   }, [])
 
+  // Apply theme
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+  }, [theme])
+
   const handleLogout = async () => {
     await signOut()
     setLoggedIn(false)
   }
 
+  const toggleTheme = () => setTheme(t => t === 'light' ? 'dark' : 'light')
+
   if (checking) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8f9fb' }}>
-        <div style={{ color: '#6b7280', fontSize: 14 }}>Se încarcă...</div>
+      <div style={{
+        minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: 'var(--bg-deep)',
+      }}>
+        <div style={{ color: 'var(--foreground-muted)', fontSize: 14 }}>Se incarca...</div>
       </div>
     )
   }
@@ -46,10 +68,10 @@ export default function App() {
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f8f9fb' }}>
-      <Sidebar currentPage={page} onNavigate={setPage} onLogout={handleLogout} />
-      <main style={{ flex: 1, overflow: 'auto' }}>
-        {page === 'dashboard' && <DashboardPage onNavigate={setPage} />}
+    <div style={{ display: 'flex', minHeight: '100vh' }}>
+      <Sidebar currentPage={page} onNavigate={setPage} onLogout={handleLogout} fbConnected={fbConnected} />
+      <main style={{ flex: 1, marginLeft: 260, overflow: 'auto' }}>
+        {page === 'dashboard' && <DashboardPage onNavigate={setPage} theme={theme} onToggleTheme={toggleTheme} />}
         {page === 'connect' && <ConnectFacebookPage />}
         {page === 'videos' && <VideosPage />}
         {page === 'posts' && <PostsPage />}

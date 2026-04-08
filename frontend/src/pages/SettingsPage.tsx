@@ -20,6 +20,11 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [postTypes, setPostTypes] = useState({ products: true, articles: true, videos: true })
+  const [shopifyStore, setShopifyStore] = useState('')
+  const [shopifyToken, setShopifyToken] = useState('')
+  const [shopifySaved, setShopifySaved] = useState(false)
+  const [shopifySaving, setShopifySaving] = useState(false)
+  const [shopifyConnected, setShopifyConnected] = useState(false)
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -35,6 +40,8 @@ export default function SettingsPage() {
           if (data.post_products !== undefined) setPostTypes(p => ({ ...p, products: data.post_products }))
           if (data.post_articles !== undefined) setPostTypes(p => ({ ...p, articles: data.post_articles }))
           if (data.post_videos !== undefined) setPostTypes(p => ({ ...p, videos: data.post_videos }))
+          if (data.shopify_store) setShopifyStore(data.shopify_store)
+          if (data.shopify_connected) setShopifyConnected(true)
         }
       } catch (e) {
         console.error('Eroare la încărcarea setărilor:', e)
@@ -73,6 +80,39 @@ export default function SettingsPage() {
       setError('Eroare de conexiune.')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const saveShopify = async () => {
+    if (!shopifyToken.trim() || !shopifyStore.trim()) {
+      setError('Completează Store URL și Access Token')
+      return
+    }
+    setShopifySaving(true)
+    setError('')
+    try {
+      const headers = await getAuthHeader()
+      const res = await fetch(`${API_URL}/settings`, {
+        method: 'POST',
+        headers: { ...headers, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'save_shopify',
+          shopify_store: shopifyStore.replace('https://', '').replace('http://', '').replace(/\/$/, ''),
+          shopify_token: shopifyToken,
+        })
+      })
+      if (res.ok) {
+        setShopifyConnected(true)
+        setShopifyToken('')
+        setShopifySaved(true)
+        setTimeout(() => setShopifySaved(false), 3000)
+      } else {
+        setError('Eroare la salvare Shopify.')
+      }
+    } catch {
+      setError('Eroare de conexiune.')
+    } finally {
+      setShopifySaving(false)
     }
   }
 
@@ -138,6 +178,76 @@ export default function SettingsPage() {
           />
         </div>
       </section>
+
+      {siteType === 'shopify' && (
+        <section style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', padding: 24, marginBottom: 20 }}>
+          <h2 style={{ fontSize: 15, fontWeight: 600, color: '#111827', marginBottom: 4 }}>Conectare Shopify</h2>
+          <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 16 }}>
+            Introdu datele magazinului tău Shopify pentru a importa produse automat.
+          </p>
+
+          {shopifyConnected && (
+            <div style={{
+              background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8,
+              padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#15803d',
+              display: 'flex', alignItems: 'center', gap: 8,
+            }}>
+              ✓ Shopify conectat — <strong>{shopifyStore}</strong>
+            </div>
+          )}
+
+          <div style={{ marginBottom: 14 }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#374151', marginBottom: 6 }}>
+              Store URL
+            </label>
+            <input
+              value={shopifyStore}
+              onChange={e => setShopifyStore(e.target.value)}
+              placeholder="magazin.myshopify.com"
+              style={{
+                width: '100%', padding: '10px 12px', border: '1px solid #d1d5db',
+                borderRadius: 8, fontSize: 13, outline: 'none', color: '#374151',
+              }}
+            />
+          </div>
+
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#374151', marginBottom: 6 }}>
+              Admin API Access Token
+            </label>
+            <input
+              type="password"
+              value={shopifyToken}
+              onChange={e => setShopifyToken(e.target.value)}
+              placeholder="shpat_..."
+              style={{
+                width: '100%', padding: '10px 12px', border: '1px solid #d1d5db',
+                borderRadius: 8, fontSize: 13, outline: 'none', color: '#374151',
+              }}
+            />
+            <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>
+              Găsești tokenul în Shopify Admin → Apps → Develop apps → API credentials
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+            <button
+              onClick={saveShopify}
+              disabled={shopifySaving}
+              style={{
+                padding: '10px 24px', background: shopifySaving ? '#6b7280' : '#5c6ac4', color: '#fff',
+                border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600,
+                cursor: shopifySaving ? 'not-allowed' : 'pointer',
+              }}
+            >
+              {shopifySaving ? 'Se salvează...' : 'Conectează Shopify'}
+            </button>
+            {shopifySaved && (
+              <span style={{ color: '#10b981', fontSize: 13, fontWeight: 500 }}>✓ Shopify conectat!</span>
+            )}
+          </div>
+        </section>
+      )}
 
       <section style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', padding: 24, marginBottom: 20 }}>
         <h2 style={{ fontSize: 15, fontWeight: 600, color: '#111827', marginBottom: 16 }}>Ce se postează</h2>

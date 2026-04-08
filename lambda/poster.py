@@ -133,8 +133,39 @@ def should_post_now(post_times, tz_name):
     except Exception:
         return False
 
+def post_facebook_video(page_id, page_token, video_url, description=''):
+    """Postează video pe Facebook Feed via URL."""
+    data = urllib.parse.urlencode({
+        'file_url': video_url,
+        'description': description,
+        'access_token': page_token,
+    }).encode()
+    req = urllib.request.Request(
+        f'{GRAPH_API}/{page_id}/videos',
+        data=data,
+        method='POST',
+    )
+    with urllib.request.urlopen(req, timeout=120) as resp:
+        return json.loads(resp.read())
+
+
+def post_facebook_story(page_id, page_token, video_url):
+    """Postează video pe Facebook Stories via URL."""
+    data = urllib.parse.urlencode({
+        'file_url': video_url,
+        'access_token': page_token,
+    }).encode()
+    req = urllib.request.Request(
+        f'{GRAPH_API}/{page_id}/video_stories',
+        data=data,
+        method='POST',
+    )
+    with urllib.request.urlopen(req, timeout=120) as resp:
+        return json.loads(resp.read())
+
+
 def lambda_handler(event, context):
-    print('AutoPost poster pornit')
+    print('AutoPost Video Poster pornit')
     scan_result = table.scan(
         FilterExpression=boto3.dynamodb.conditions.Attr('SK').eq('SETTINGS')
     )
@@ -147,43 +178,74 @@ def lambda_handler(event, context):
         timezone_name = tenant_settings.get('timezone', 'Europe/Bucharest')
         post_videos = tenant_settings.get('post_videos', True)
         ig_account_id = tenant_settings.get('instagram_account_id', '')
+
         if not should_post_now(post_times, timezone_name):
             continue
         if not post_videos:
             continue
-        if not ig_account_id:
-            results.append({'tenant': tenant_id, 'status': 'skip', 'reason': 'instagram_account_id lipsa'})
-            continue
+
         fb_secret = get_facebook_secret(tenant_id)
         if not fb_secret:
             results.append({'tenant': tenant_id, 'status': 'error', 'reason': 'token Facebook lipsa'})
             continue
+
+        page_id = fb_secret.get('page_id', '')
         page_token = fb_secret.get('page_access_token', '')
+
         video = get_pending_video(tenant_id)
         if not video:
             results.append({'tenant': tenant_id, 'status': 'skip', 'reason': 'fara videouri pending'})
             continue
+
         video_id = video['video_id']
         s3_key = video['s3_key']
         video_url = get_video_url(s3_key, expires=3600)
         caption = f'🎬 {video.get("filename", "").replace(".mp4", "").replace("_", " ")}'
         tenant_result = {'tenant': tenant_id, 'video_id': video_id}
-        try:
-            reel_id = post_instagram_reel(ig_account_id, page_token, video_url, caption)
-            log_post(tenant_id, video_id, 'reel', 'success')
-            tenant_result['reel'] = reel_id
-        except Exception as e:
-            log_post(tenant_id, video_id, 'reel', 'error', str(e))
-            tenant_result['reel_error'] = str(e)
-        try:
-            story_id = post_instagram_story(ig_account_id, page_token, video_url)
-            log_post(tenant_id, video_id, 'story', 'success')
-            tenant_result['story'] = story_id
-        except Exception as e:
-            log_post(tenant_id, video_id, 'story', 'error', str(e))
-            tenant_result['story_error'] = str(e)
-        if 'reel' in tenant_result or 'story' in tenant_result:
+
+        # ── Instagram Reel
+        if ig_account_id:
+            try:
+                reel_id = post_instagram_reel(ig_account_id, page_token, video_url, caption)
+                log_post(tenant_id, video_id, 'reel', 'success')
+                tenant_result['reel'] = reel_id
+            except Exception as e:
+                log_post(tenant_id, video_id, 'reel', 'error', str(e))
+                tenant_result['reel_error'] = str(e)
+
+            # ── Instagram Story
+            try:
+                story_id = post_instagram_story(ig_account_id, page_token, video_url)
+                log_post(tenant_id, video_id, 'story', 'success')
+                tenant_result['ig_story'] = story_id
+            except Exception as e:
+                log_post(tenant_id, video_id, 'story', 'error', str(e))
+                tenant_result['ig_story_error'] = str(e)
+
+        # ── Facebook Feed Video
+        if page_id:
+            try:
+                fb_video = post_facebook_video(page_id, page_token, video_url, caption)
+                log_post(tenant_id, video_id, 'fb_video', 'success')
+                tenant_result['fb_video'] = fb_video.get('id', '')
+            except Exception as e:
+                log_post(tenant_id, video_id, 'fb_video', 'error', str(e))
+                tenant_result['fb_video_error'] = str(e)
+
+            # ── Facebook Story
+            try:
+                fb_story = post_facebook_story(page_id, page_token, video_url)
+                log_post(tenant_id, video_id, 'fb_story', 'success')
+                tenant_result['fb_story'] = fb_story.get('video_id', '')
+            except Exception as e:
+                log_post(tenant_id, video_id, 'fb_story', 'error', str(e))
+                tenant_result['fb_story_error'] = str(e)
+
+        posted = any(k in tenant_result for k in ('reel', 'ig_story', 'fb_video', 'fb_story'))
+        if posted:
             mark_video_used(tenant_id, video_id)
+
         results.append(tenant_result)
+
     print(json.dumps(results, indent=2))
     return {'statusCode': 200, 'body': json.dumps(results)}
