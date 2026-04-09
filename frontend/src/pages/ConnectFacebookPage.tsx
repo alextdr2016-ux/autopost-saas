@@ -114,10 +114,10 @@ export default function ConnectFacebookPage() {
 
   return (
     <div style={{ padding: 32, maxWidth: 700 }}>
-      <h1 style={{ fontSize: 22, fontWeight: 700, color: '#111827', marginBottom: 6 }}>
+      <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--foreground)', marginBottom: 6 }}>
         Conectare Facebook & Instagram
       </h1>
-      <p style={{ color: '#6b7280', fontSize: 14, marginBottom: 32 }}>
+      <p style={{ color: 'var(--foreground-muted)', fontSize: 14, marginBottom: 32 }}>
         Conectează pagina ta de Facebook pentru a activa postarea automată.
       </p>
 
@@ -160,7 +160,7 @@ export default function ConnectFacebookPage() {
       )}
 
       <div style={{
-        background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb',
+        background: 'var(--bg-card)', borderRadius: 10, border: '1px solid var(--border)',
         padding: 24, marginBottom: 16,
       }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
@@ -172,7 +172,7 @@ export default function ConnectFacebookPage() {
 
           <div style={{ flex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-              <span style={{ fontWeight: 600, color: '#111827', fontSize: 16 }}>Facebook</span>
+              <span style={{ fontWeight: 600, color: 'var(--foreground)', fontSize: 16 }}>Facebook</span>
               {fbStatus === 'connected' && (
                 <span style={{
                   background: '#ecfdf5', color: '#065f46', fontSize: 11,
@@ -183,9 +183,9 @@ export default function ConnectFacebookPage() {
 
             {fbStatus === 'connected' ? (
               <div>
-                <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 16 }}>
-                  Page ID: <strong style={{ color: '#374151', fontFamily: 'monospace' }}>{pageId}</strong>
-                  {' '}· Token stocat în <strong style={{ color: '#374151' }}>AWS Secrets Manager</strong>
+                <div style={{ fontSize: 13, color: 'var(--foreground-muted)', marginBottom: 16 }}>
+                  Page ID: <strong style={{ color: 'var(--foreground)', fontFamily: 'monospace' }}>{pageId}</strong>
+                  {' '}· Token stocat în <strong style={{ color: 'var(--foreground)' }}>AWS Secrets Manager</strong>
                 </div>
                 <div style={{ display: 'flex', gap: 10 }}>
                   <button
@@ -201,7 +201,7 @@ export default function ConnectFacebookPage() {
                   <button
                     onClick={disconnect}
                     style={{
-                      padding: '8px 16px', background: '#fff', color: '#dc2626',
+                      padding: '8px 16px', background: 'var(--bg-card)', color: '#dc2626',
                       border: '1px solid #fecaca', borderRadius: 7, fontSize: 13,
                       fontWeight: 500, cursor: 'pointer',
                     }}
@@ -213,7 +213,7 @@ export default function ConnectFacebookPage() {
             ) : (
               <div>
                 <div style={{ marginBottom: 12 }}>
-                  <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#374151', marginBottom: 6 }}>
+                  <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--foreground)', marginBottom: 6 }}>
                     Page ID
                   </label>
                   <input
@@ -222,14 +222,14 @@ export default function ConnectFacebookPage() {
                     onChange={e => setPageId(e.target.value)}
                     placeholder="1527633700832184"
                     style={{
-                      width: '100%', padding: '10px 12px', border: '1px solid #d1d5db',
+                      width: '100%', padding: '10px 12px', border: '1px solid var(--border)',
                       borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box',
-                      fontFamily: 'monospace',
+                      fontFamily: 'monospace', background: 'var(--bg-deep)', color: 'var(--foreground)',
                     }}
                   />
                 </div>
                 <div style={{ marginBottom: 16 }}>
-                  <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#374151', marginBottom: 6 }}>
+                  <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--foreground)', marginBottom: 6 }}>
                     Page Access Token
                   </label>
                   <textarea
@@ -238,9 +238,9 @@ export default function ConnectFacebookPage() {
                     placeholder="EAANh..."
                     rows={3}
                     style={{
-                      width: '100%', padding: '10px 12px', border: '1px solid #d1d5db',
+                      width: '100%', padding: '10px 12px', border: '1px solid var(--border)',
                       borderRadius: 8, fontSize: 12, outline: 'none', boxSizing: 'border-box',
-                      fontFamily: 'monospace', resize: 'vertical',
+                      fontFamily: 'monospace', resize: 'vertical', background: 'var(--bg-deep)', color: 'var(--foreground)',
                     }}
                   />
                 </div>
@@ -262,7 +262,7 @@ export default function ConnectFacebookPage() {
       </div>
 
       <div style={{
-        background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb',
+        background: 'var(--bg-card)', borderRadius: 10, border: '1px solid var(--border)',
         padding: 24, opacity: fbStatus !== 'connected' ? 0.5 : 1,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -274,7 +274,7 @@ export default function ConnectFacebookPage() {
           }}>📷</div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-              <span style={{ fontWeight: 600, color: '#111827', fontSize: 16 }}>Instagram Business</span>
+              <span style={{ fontWeight: 600, color: 'var(--foreground)', fontSize: 16 }}>Instagram Business</span>
               {fbStatus === 'connected' && (
                 <span style={{
                   background: '#ecfdf5', color: '#065f46', fontSize: 11,
@@ -282,7 +282,7 @@ export default function ConnectFacebookPage() {
                 }}>● Conectat automat</span>
               )}
             </div>
-            <p style={{ fontSize: 13, color: '#6b7280', marginBottom: fbStatus === 'connected' ? 16 : 0 }}>
+            <p style={{ fontSize: 13, color: 'var(--foreground-muted)', marginBottom: fbStatus === 'connected' ? 16 : 0 }}>
               {fbStatus === 'connected'
                 ? 'Conectat prin pagina Facebook. Introdu Instagram Business Account ID pentru a activa postarea.'
                 : 'Se conectează automat după conectarea Facebook-ului.'
@@ -290,7 +290,7 @@ export default function ConnectFacebookPage() {
             </p>
             {fbStatus === 'connected' && (
               <div>
-                <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#374151', marginBottom: 6 }}>
+                <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--foreground)', marginBottom: 6 }}>
                   Instagram Business Account ID
                 </label>
                 <div style={{ display: 'flex', gap: 8 }}>
@@ -300,9 +300,9 @@ export default function ConnectFacebookPage() {
                     onChange={e => setIgAccountId(e.target.value)}
                     placeholder="17841400000000000"
                     style={{
-                      flex: 1, padding: '10px 12px', border: '1px solid #d1d5db',
+                      flex: 1, padding: '10px 12px', border: '1px solid var(--border)',
                       borderRadius: 8, fontSize: 13, outline: 'none',
-                      fontFamily: 'monospace',
+                      fontFamily: 'monospace', background: 'var(--bg-deep)', color: 'var(--foreground)',
                     }}
                   />
                   <button
@@ -317,7 +317,7 @@ export default function ConnectFacebookPage() {
                     {savingIg ? 'Se salvează...' : 'Salvează'}
                   </button>
                 </div>
-                <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 6 }}>
+                <div style={{ fontSize: 12, color: 'var(--foreground-dim)', marginTop: 6 }}>
                   Găsești ID-ul în Facebook Business Manager sau via Graph API: GET /{'{page-id}'}?fields=instagram_business_account
                 </div>
               </div>
@@ -327,10 +327,10 @@ export default function ConnectFacebookPage() {
       </div>
 
       <div style={{
-        marginTop: 24, padding: '14px 18px', background: '#f9fafb',
-        border: '1px solid #e5e7eb', borderRadius: 8, fontSize: 12, color: '#6b7280',
+        marginTop: 24, padding: '14px 18px', background: 'var(--surface)',
+        border: '1px solid var(--border)', borderRadius: 8, fontSize: 12, color: 'var(--foreground-muted)',
       }}>
-        <strong style={{ color: '#374151' }}>Securitate:</strong>{' '}
+        <strong style={{ color: 'var(--foreground)' }}>Securitate:</strong>{' '}
         Token-ul tău Facebook este stocat criptat în AWS Secrets Manager și nu este niciodată expus în frontend.
       </div>
     </div>

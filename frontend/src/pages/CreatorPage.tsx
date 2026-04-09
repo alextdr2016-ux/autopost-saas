@@ -1394,8 +1394,8 @@ export default function CreatorPage() {
   return (
     <div style={{ padding: 32 }}>
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: '#111827' }}>Creator postări</h1>
-        <p style={{ color: '#6b7280', fontSize: 14, marginTop: 4 }}>
+        <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--foreground)' }}>Creator postări</h1>
+        <p style={{ color: 'var(--foreground-muted)', fontSize: 14, marginTop: 4 }}>
           Creează imagini pentru postări și publică direct pe Facebook.
         </p>
       </div>
@@ -1406,7 +1406,7 @@ export default function CreatorPage() {
         <div style={{ width: 310, flexShrink: 0 }}>
 
           {/* Left panel tab switcher */}
-          <div style={{ display: 'flex', gap: 0, marginBottom: 18, borderBottom: '2px solid #e5e7eb' }}>
+          <div style={{ display: 'flex', gap: 0, marginBottom: 18, borderBottom: '2px solid var(--border)' }}>
             {([
               { key: 'editor', label: '⚙ Editor' },
               { key: 'queue',  label: '📋 Coadă auto-post' },
@@ -1416,7 +1416,7 @@ export default function CreatorPage() {
                   padding: '8px 14px', fontSize: 12, fontWeight: 600,
                   background: 'none', border: 'none', cursor: 'pointer',
                   borderBottom: leftTab === tab.key ? '2px solid #3b82f6' : '2px solid transparent',
-                  color: leftTab === tab.key ? '#1d4ed8' : '#6b7280',
+                  color: leftTab === tab.key ? '#1d4ed8' : 'var(--foreground-muted)',
                   marginBottom: -2, whiteSpace: 'nowrap',
                 }}>
                 {tab.label}
@@ -1449,7 +1449,7 @@ export default function CreatorPage() {
 
               {/* Queue list */}
               {queue.length === 0 ? (
-                <div style={{ textAlign: 'center', color: '#9ca3af', fontSize: 12, padding: '20px 0', border: '2px dashed #e5e7eb', borderRadius: 8, marginBottom: 14 }}>
+                <div style={{ textAlign: 'center', color: 'var(--foreground-dim)', fontSize: 12, padding: '20px 0', border: '2px dashed var(--border)', borderRadius: 8, marginBottom: 14 }}>
                   <div style={{ fontSize: 28, marginBottom: 6 }}>📭</div>
                   Nu ai template-uri în coadă.<br />Adaugă mai jos.
                 </div>
@@ -1463,32 +1463,32 @@ export default function CreatorPage() {
                       <div key={item.id} style={{
                         display: 'flex', alignItems: 'center', gap: 6, padding: '8px 10px',
                         marginBottom: 6, borderRadius: 8,
-                        background: done ? '#f9fafb' : '#fff',
-                        border: done ? '1px solid #e5e7eb' : '1px solid #d1d5db',
+                        background: done ? 'var(--surface)' : 'var(--bg-card)',
+                        border: done ? '1px solid var(--border)' : '1px solid var(--border)',
                         opacity: done ? 0.55 : 1,
                       }}>
                         {/* Color dot */}
                         <div style={{ width: 12, height: 12, borderRadius: 3, background: tpl.accentColor, flexShrink: 0 }} />
                         {/* Name */}
-                        <span style={{ flex: 1, fontSize: 11, fontWeight: 600, color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <span style={{ flex: 1, fontSize: 11, fontWeight: 600, color: 'var(--foreground)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {tpl.label}
                         </span>
                         {/* Progress: used/count */}
-                        <span style={{ fontSize: 10, color: '#9ca3af', whiteSpace: 'nowrap' }}>{item.used}/{item.count}</span>
+                        <span style={{ fontSize: 10, color: 'var(--foreground-dim)', whiteSpace: 'nowrap' }}>{item.used}/{item.count}</span>
                         {/* Count input */}
                         <input
                           type="number" min={1} max={999}
                           value={item.count}
                           onChange={e => updateQueueItemCount(item.id, parseInt(e.target.value) || 1)}
-                          style={{ width: 44, padding: '3px 5px', border: '1px solid #d1d5db', borderRadius: 5, fontSize: 11, textAlign: 'center', outline: 'none' }}
+                          style={{ width: 44, padding: '3px 5px', border: '1px solid var(--border)', borderRadius: 5, fontSize: 11, textAlign: 'center', outline: 'none' }}
                         />
-                        <span style={{ fontSize: 10, color: '#9ca3af' }}>post.</span>
+                        <span style={{ fontSize: 10, color: 'var(--foreground-dim)' }}>post.</span>
                         {/* Move up */}
                         <button onClick={() => moveQueueItem(item.id, -1)} disabled={idx === 0}
-                          style={{ padding: '2px 5px', fontSize: 10, border: '1px solid #e5e7eb', borderRadius: 4, background: '#fff', cursor: idx === 0 ? 'not-allowed' : 'pointer', color: '#6b7280' }}>▲</button>
+                          style={{ padding: '2px 5px', fontSize: 10, border: '1px solid var(--border)', borderRadius: 4, background: 'var(--bg-card)', cursor: idx === 0 ? 'not-allowed' : 'pointer', color: 'var(--foreground-muted)' }}>▲</button>
                         {/* Move down */}
                         <button onClick={() => moveQueueItem(item.id, 1)} disabled={idx === queue.length - 1}
-                          style={{ padding: '2px 5px', fontSize: 10, border: '1px solid #e5e7eb', borderRadius: 4, background: '#fff', cursor: idx === queue.length - 1 ? 'not-allowed' : 'pointer', color: '#6b7280' }}>▼</button>
+                          style={{ padding: '2px 5px', fontSize: 10, border: '1px solid var(--border)', borderRadius: 4, background: 'var(--bg-card)', cursor: idx === queue.length - 1 ? 'not-allowed' : 'pointer', color: 'var(--foreground-muted)' }}>▼</button>
                         {/* Delete */}
                         <button onClick={() => removeQueueItem(item.id)}
                           style={{ padding: '2px 6px', fontSize: 12, border: '1px solid #fecaca', borderRadius: 4, background: '#fff5f5', cursor: 'pointer', color: '#ef4444' }}>×</button>
@@ -1499,27 +1499,27 @@ export default function CreatorPage() {
               )}
 
               {/* Add to queue */}
-              <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, padding: '12px', marginBottom: 12 }}>
-                <div style={{ fontSize: 11, fontWeight: 600, color: '#374151', marginBottom: 8 }}>Adaugă în coadă</div>
+              <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, padding: '12px', marginBottom: 12 }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--foreground)', marginBottom: 8 }}>Adaugă în coadă</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
                   <div style={{ width: 10, height: 10, borderRadius: 2, background: selectedTemplate.accentColor, flexShrink: 0 }} />
-                  <span style={{ flex: 1, fontSize: 11, fontWeight: 600, color: '#374151' }}>
-                    {selectedTemplate.label} <span style={{ fontWeight: 400, color: '#9ca3af' }}>(selectat în editor)</span>
+                  <span style={{ flex: 1, fontSize: 11, fontWeight: 600, color: 'var(--foreground)' }}>
+                    {selectedTemplate.label} <span style={{ fontWeight: 400, color: 'var(--foreground-dim)' }}>(selectat în editor)</span>
                   </span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <label style={{ fontSize: 11, color: '#6b7280', whiteSpace: 'nowrap' }}>Număr postări:</label>
+                  <label style={{ fontSize: 11, color: 'var(--foreground-muted)', whiteSpace: 'nowrap' }}>Număr postări:</label>
                   <input
                     type="number" min={1} max={999} value={queueAddCount}
                     onChange={e => setQueueAddCount(Math.max(1, parseInt(e.target.value) || 1))}
-                    style={{ width: 60, padding: '5px 8px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 12, textAlign: 'center', outline: 'none' }}
+                    style={{ width: 60, padding: '5px 8px', border: '1px solid var(--border)', borderRadius: 6, fontSize: 12, textAlign: 'center', outline: 'none' }}
                   />
                   <button onClick={addToQueue}
                     style={{ flex: 1, padding: '6px', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
                     + Adaugă
                   </button>
                 </div>
-                <div style={{ fontSize: 10, color: '#9ca3af', marginTop: 6 }}>
+                <div style={{ fontSize: 10, color: 'var(--foreground-dim)', marginTop: 6 }}>
                   Selectează alt template în Editor pentru a adăuga tipuri diferite.
                 </div>
               </div>
@@ -1540,8 +1540,8 @@ export default function CreatorPage() {
 
               <button onClick={loadQueueFromCloud} disabled={cloudLoading}
                 style={{
-                  width: '100%', padding: '8px', background: '#f9fafb', color: '#374151',
-                  border: '1px solid #e5e7eb', borderRadius: 7, fontSize: 12, fontWeight: 500,
+                  width: '100%', padding: '8px', background: 'var(--surface)', color: 'var(--foreground)',
+                  border: '1px solid var(--border)', borderRadius: 7, fontSize: 12, fontWeight: 500,
                   cursor: cloudLoading ? 'not-allowed' : 'pointer', marginBottom: 10,
                 }}>
                 {cloudLoading ? 'Se încarcă...' : '⬇ Încarcă din cloud'}
@@ -1551,7 +1551,7 @@ export default function CreatorPage() {
               {queue.length > 0 && (
                 <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
                   <button onClick={resetQueueUsed}
-                    style={{ flex: 1, padding: '7px', background: '#fff', color: '#374151', border: '1px solid #e5e7eb', borderRadius: 7, fontSize: 11, cursor: 'pointer' }}>
+                    style={{ flex: 1, padding: '7px', background: 'var(--bg-card)', color: 'var(--foreground)', border: '1px solid var(--border)', borderRadius: 7, fontSize: 11, cursor: 'pointer' }}>
                     🔄 Resetează contori
                   </button>
                   <button onClick={() => { setQueue([]); setQueueMsg('') }}
@@ -1578,10 +1578,10 @@ export default function CreatorPage() {
           {(() => {
             const sectionStyle = (id: string) => ({
               marginBottom: 6,
-              border: '1px solid #e5e7eb',
+              border: '1px solid var(--border)',
               borderRadius: 10,
               overflow: 'hidden' as const,
-              background: openSections.has(id) ? '#fff' : '#fafafa',
+              background: openSections.has(id) ? 'var(--bg-card)' : 'var(--surface)',
             })
             const headerStyle = (id: string) => ({
               display: 'flex' as const,
@@ -1594,7 +1594,7 @@ export default function CreatorPage() {
               width: '100%' as const,
               fontSize: 13,
               fontWeight: 600 as const,
-              color: '#374151',
+              color: 'var(--foreground)',
               userSelect: 'none' as const,
             })
             const bodyStyle = {
@@ -1607,7 +1607,7 @@ export default function CreatorPage() {
             <div style={sectionStyle('template')}>
               <button onClick={() => toggleSection('template')} style={headerStyle('template')}>
                 <span>{chevron('template')} Template & Format</span>
-                <span style={{ fontSize: 10, fontWeight: 400, color: '#9ca3af' }}>{selectedTemplate.label} · {FORMATS[format].label}</span>
+                <span style={{ fontSize: 10, fontWeight: 400, color: 'var(--foreground-dim)' }}>{selectedTemplate.label} · {FORMATS[format].label}</span>
               </button>
               {openSections.has('template') && <div style={bodyStyle}>
                 {/* Format */}
@@ -1616,9 +1616,9 @@ export default function CreatorPage() {
                     <button key={key} onClick={() => setFormat(key)}
                       style={{
                         flex: 1, padding: '6px 4px', borderRadius: 7, fontSize: 10, fontWeight: 600,
-                        border: format === key ? '2px solid #3b82f6' : '1px solid #e5e7eb',
-                        background: format === key ? '#eff6ff' : '#fff',
-                        color: format === key ? '#1d4ed8' : '#6b7280',
+                        border: format === key ? '2px solid #3b82f6' : '1px solid var(--border)',
+                        background: format === key ? '#eff6ff' : 'var(--bg-card)',
+                        color: format === key ? '#1d4ed8' : 'var(--foreground-muted)',
                         cursor: 'pointer',
                       }}>
                       {val.label}
@@ -1628,7 +1628,7 @@ export default function CreatorPage() {
                 {/* Templates */}
                 {templateGroups.map(group => (
                   <div key={group.label} style={{ marginBottom: 8 }}>
-                    <div style={{ fontSize: 9, fontWeight: 600, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>
+                    <div style={{ fontSize: 9, fontWeight: 600, color: 'var(--foreground-dim)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>
                       {group.label}
                     </div>
                     <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
@@ -1637,9 +1637,9 @@ export default function CreatorPage() {
                           onClick={() => { setSelectedTemplate(t); setCustomBadgeText(t.badgeText); setCustomBadgeBg(t.badgeBg); setCustomBadgeFontSize(40) }}
                           style={{
                             padding: '4px 8px', borderRadius: 6, fontSize: 9, fontWeight: 600,
-                            border: selectedTemplate.id === t.id ? `2px solid ${t.accentColor}` : '1px solid #e5e7eb',
-                            background: selectedTemplate.id === t.id ? t.accentColor : '#fff',
-                            color: selectedTemplate.id === t.id ? '#fff' : '#6b7280',
+                            border: selectedTemplate.id === t.id ? `2px solid ${t.accentColor}` : '1px solid var(--border)',
+                            background: selectedTemplate.id === t.id ? t.accentColor : 'var(--bg-card)',
+                            color: selectedTemplate.id === t.id ? '#fff' : 'var(--foreground-muted)',
                             cursor: 'pointer', whiteSpace: 'nowrap',
                           }}>
                           {t.label}
@@ -1655,7 +1655,7 @@ export default function CreatorPage() {
             <div style={sectionStyle('image')}>
               <button onClick={() => toggleSection('image')} style={headerStyle('image')}>
                 <span>{chevron('image')} Imagine</span>
-                <span style={{ fontSize: 10, fontWeight: 400, color: '#9ca3af' }}>{productImage ? '✓ încărcată' : 'nicio poză'}</span>
+                <span style={{ fontSize: 10, fontWeight: 400, color: 'var(--foreground-dim)' }}>{productImage ? '✓ încărcată' : 'nicio poză'}</span>
               </button>
               {openSections.has('image') && <div style={bodyStyle}>
                 <div
@@ -1663,13 +1663,13 @@ export default function CreatorPage() {
                   onDragOver={e => e.preventDefault()}
                   onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) handleImageUpload(f) }}
                   style={{
-                    border: '2px dashed #d1d5db', borderRadius: 8, padding: 10,
-                    cursor: 'pointer', textAlign: 'center', background: '#f9fafb', marginBottom: 8,
+                    border: '2px dashed var(--border)', borderRadius: 8, padding: 10,
+                    cursor: 'pointer', textAlign: 'center', background: 'var(--surface)', marginBottom: 8,
                   }}>
                   {productImagePreview ? (
                     <img src={productImagePreview} style={{ maxHeight: 60, maxWidth: '100%', borderRadius: 6, objectFit: 'contain' }} />
                   ) : (
-                    <div style={{ color: '#9ca3af', fontSize: 11 }}>Click sau trage o poză</div>
+                    <div style={{ color: 'var(--foreground-dim)', fontSize: 11 }}>Click sau trage o poză</div>
                   )}
                 </div>
                 <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }}
@@ -1679,9 +1679,9 @@ export default function CreatorPage() {
                   <input value={imageUrl} onChange={e => setImageUrl(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter') loadImageFromUrl(imageUrl) }}
                     placeholder="Sau lipește un URL..."
-                    style={{ flex: 1, padding: '6px 8px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 11, outline: 'none', boxSizing: 'border-box' }} />
+                    style={{ flex: 1, padding: '6px 8px', border: '1px solid var(--border)', borderRadius: 6, fontSize: 11, outline: 'none', boxSizing: 'border-box' }} />
                   <button onClick={() => loadImageFromUrl(imageUrl)} disabled={imageUrlLoading}
-                    style={{ padding: '6px 8px', background: '#f3f4f6', border: '1px solid #e5e7eb', borderRadius: 6, fontSize: 11, cursor: 'pointer' }}>
+                    style={{ padding: '6px 8px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 6, fontSize: 11, cursor: 'pointer', color: 'var(--foreground)' }}>
                     {imageUrlLoading ? '...' : '→'}
                   </button>
                 </div>
@@ -1695,22 +1695,22 @@ export default function CreatorPage() {
                     <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
                       <button onClick={() => setImgFit('contain')}
                         style={{ flex: 1, padding: '5px 4px', borderRadius: 6, fontSize: 10, fontWeight: 600,
-                          border: imgFit === 'contain' ? '2px solid #3b82f6' : '1px solid #e5e7eb',
-                          background: imgFit === 'contain' ? '#eff6ff' : '#fff',
-                          color: imgFit === 'contain' ? '#1d4ed8' : '#6b7280', cursor: 'pointer' }}>
+                          border: imgFit === 'contain' ? '2px solid #3b82f6' : '1px solid var(--border)',
+                          background: imgFit === 'contain' ? '#eff6ff' : 'var(--bg-card)',
+                          color: imgFit === 'contain' ? '#1d4ed8' : 'var(--foreground-muted)', cursor: 'pointer' }}>
                         Fit
                       </button>
                       <button onClick={() => setImgFit('cover')}
                         style={{ flex: 1, padding: '5px 4px', borderRadius: 6, fontSize: 10, fontWeight: 600,
-                          border: imgFit === 'cover' ? '2px solid #3b82f6' : '1px solid #e5e7eb',
-                          background: imgFit === 'cover' ? '#eff6ff' : '#fff',
-                          color: imgFit === 'cover' ? '#1d4ed8' : '#6b7280', cursor: 'pointer' }}>
+                          border: imgFit === 'cover' ? '2px solid #3b82f6' : '1px solid var(--border)',
+                          background: imgFit === 'cover' ? '#eff6ff' : 'var(--bg-card)',
+                          color: imgFit === 'cover' ? '#1d4ed8' : 'var(--foreground-muted)', cursor: 'pointer' }}>
                         Fill
                       </button>
                     </div>
                     {/* Zoom */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span style={{ fontSize: 10, color: '#6b7280', whiteSpace: 'nowrap' }}>Zoom {Math.round(imgScale * 100)}%</span>
+                      <span style={{ fontSize: 10, color: 'var(--foreground-muted)', whiteSpace: 'nowrap' }}>Zoom {Math.round(imgScale * 100)}%</span>
                       <input type="range" min="0.5" max="3" step="0.01" value={imgScale}
                         onChange={e => setImgScale(parseFloat(e.target.value))}
                         style={{ flex: 1, accentColor: '#3b82f6' }} />
@@ -1724,7 +1724,7 @@ export default function CreatorPage() {
                 {/* Culoare fundal */}
                 {!productImage && (
                   <div style={{ marginTop: 6 }}>
-                    <label style={{ display: 'block', fontSize: 10, fontWeight: 500, color: '#6b7280', marginBottom: 3 }}>Culoare fundal</label>
+                    <label style={{ display: 'block', fontSize: 10, fontWeight: 500, color: 'var(--foreground-muted)', marginBottom: 3 }}>Culoare fundal</label>
                     <div style={{ display: 'flex', gap: 4, alignItems: 'center', flexWrap: 'wrap' }}>
                       {['#e5e7eb', '#111827', '#1e3a5f', '#f5f0eb', '#fdf2f4', '#fffef5', '#f3e8ff', '#dcfce7'].map(c => (
                         <div key={c} onClick={() => setBgColor(c)}
@@ -1753,13 +1753,13 @@ export default function CreatorPage() {
               </button>
               {openSections.has('badge') && <div style={bodyStyle}>
                 <div style={{ marginBottom: 8 }}>
-                  <label style={{ display: 'block', fontSize: 10, fontWeight: 500, color: '#6b7280', marginBottom: 2 }}>Text</label>
+                  <label style={{ display: 'block', fontSize: 10, fontWeight: 500, color: 'var(--foreground-muted)', marginBottom: 2 }}>Text</label>
                   <input value={customBadgeText} onChange={e => setCustomBadgeText(e.target.value)}
                     placeholder="Ex: LIVRARE GRATUITĂ, PROMO..."
-                    style={{ width: '100%', padding: '6px 8px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 11, outline: 'none', boxSizing: 'border-box' }} />
+                    style={{ width: '100%', padding: '6px 8px', border: '1px solid var(--border)', borderRadius: 6, fontSize: 11, outline: 'none', boxSizing: 'border-box' }} />
                 </div>
                 <div style={{ marginBottom: 8 }}>
-                  <label style={{ display: 'block', fontSize: 10, fontWeight: 500, color: '#6b7280', marginBottom: 2 }}>Culoare</label>
+                  <label style={{ display: 'block', fontSize: 10, fontWeight: 500, color: 'var(--foreground-muted)', marginBottom: 2 }}>Culoare</label>
                   <div style={{ display: 'flex', gap: 4, alignItems: 'center', flexWrap: 'wrap' }}>
                     {['#111827', '#ea580c', '#ca8a04', '#16a34a', '#dc2626', '#9f1239', '#3b82f6', '#6b21a8'].map(c => (
                       <div key={c} onClick={() => setCustomBadgeBg(c)}
@@ -1775,7 +1775,7 @@ export default function CreatorPage() {
                 </div>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontSize: 10, color: '#6b7280', whiteSpace: 'nowrap' }}>Mărime {customBadgeFontSize}px</span>
+                    <span style={{ fontSize: 10, color: 'var(--foreground-muted)', whiteSpace: 'nowrap' }}>Mărime {customBadgeFontSize}px</span>
                     <input type="range" min="20" max="72" step="2" value={customBadgeFontSize}
                       onChange={e => setCustomBadgeFontSize(parseInt(e.target.value))}
                       style={{ flex: 1, accentColor: customBadgeBg }} />
@@ -1783,7 +1783,7 @@ export default function CreatorPage() {
                 </div>
                 {/* Show badge on frame toggle */}
                 {selectedTemplate.layout.startsWith('frame_') && (
-                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, cursor: 'pointer', fontSize: 11, color: '#374151' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, cursor: 'pointer', fontSize: 11, color: 'var(--foreground)' }}>
                     <input type="checkbox" checked={showBadgeOnFrame}
                       onChange={e => setShowBadgeOnFrame(e.target.checked)}
                       style={{ accentColor: customBadgeBg, width: 16, height: 16, cursor: 'pointer' }} />
@@ -1797,19 +1797,19 @@ export default function CreatorPage() {
             <div style={sectionStyle('style')}>
               <button onClick={() => toggleSection('style')} style={headerStyle('style')}>
                 <span>{chevron('style')} Stil text</span>
-                <span style={{ fontSize: 10, fontWeight: 400, color: '#9ca3af' }}>{fontSize}px · {Math.round(overlayOpacity * 100)}%</span>
+                <span style={{ fontSize: 10, fontWeight: 400, color: 'var(--foreground-dim)' }}>{fontSize}px · {Math.round(overlayOpacity * 100)}%</span>
               </button>
               {openSections.has('style') && <div style={bodyStyle}>
                 {/* Font size */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-                  <span style={{ fontSize: 10, color: '#6b7280', whiteSpace: 'nowrap' }}>Text {fontSize}px</span>
+                  <span style={{ fontSize: 10, color: 'var(--foreground-muted)', whiteSpace: 'nowrap' }}>Text {fontSize}px</span>
                   <input type="range" min="24" max="96" step="2" value={fontSize}
                     onChange={e => setFontSize(parseInt(e.target.value))}
                     style={{ flex: 1, accentColor: '#3b82f6' }} />
                 </div>
                 {/* Overlay */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-                  <span style={{ fontSize: 10, color: '#6b7280', whiteSpace: 'nowrap' }}>Overlay {Math.round(overlayOpacity * 100)}%</span>
+                  <span style={{ fontSize: 10, color: 'var(--foreground-muted)', whiteSpace: 'nowrap' }}>Overlay {Math.round(overlayOpacity * 100)}%</span>
                   <input type="range" min="0" max="1" step="0.05" value={overlayOpacity}
                     onChange={e => setOverlayOpacity(parseFloat(e.target.value))}
                     style={{ flex: 1, accentColor: '#6b7280' }} />
@@ -1820,9 +1820,9 @@ export default function CreatorPage() {
                     <button key={a} onClick={() => setTextAlign(a)}
                       style={{
                         flex: 1, padding: '5px', borderRadius: 5, fontSize: 12,
-                        border: textAlign === a ? '2px solid #3b82f6' : '1px solid #e5e7eb',
-                        background: textAlign === a ? '#eff6ff' : '#fff',
-                        color: textAlign === a ? '#1d4ed8' : '#6b7280', cursor: 'pointer',
+                        border: textAlign === a ? '2px solid #3b82f6' : '1px solid var(--border)',
+                        background: textAlign === a ? '#eff6ff' : 'var(--bg-card)',
+                        color: textAlign === a ? '#1d4ed8' : 'var(--foreground-muted)', cursor: 'pointer',
                       }}>
                       {a === 'left' ? '⬅' : a === 'center' ? '↔' : '➡'}
                     </button>
@@ -1830,14 +1830,14 @@ export default function CreatorPage() {
                 </div>
                 {/* Color */}
                 <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-                  <div style={{ width: 24, height: 24, borderRadius: 5, background: textColor, border: '2px solid #e5e7eb', flexShrink: 0 }} />
+                  <div style={{ width: 24, height: 24, borderRadius: 5, background: textColor, border: '2px solid var(--border)', flexShrink: 0 }} />
                   {['#ffffff', '#111827', '#C9A84C', '#dc2626', '#3b82f6'].map(c => (
                     <div key={c} onClick={() => setTextColor(c)}
                       style={{ width: 20, height: 20, borderRadius: 4, background: c, cursor: 'pointer', flexShrink: 0,
-                        border: textColor === c ? '3px solid #3b82f6' : '2px solid #e5e7eb' }} />
+                        border: textColor === c ? '3px solid #3b82f6' : '2px solid var(--border)' }} />
                   ))}
                   <label style={{ position: 'relative', cursor: 'pointer', flexShrink: 0 }}>
-                    <div style={{ width: 20, height: 20, borderRadius: 4, background: 'conic-gradient(red, yellow, lime, cyan, blue, magenta, red)', border: '2px solid #e5e7eb' }} />
+                    <div style={{ width: 20, height: 20, borderRadius: 4, background: 'conic-gradient(red, yellow, lime, cyan, blue, magenta, red)', border: '2px solid var(--border)' }} />
                     <input type="color" value={textColor} onChange={e => setTextColor(e.target.value)}
                       style={{ position: 'absolute', opacity: 0, width: 0, height: 0, top: 0, left: 0 }} />
                   </label>
@@ -1852,33 +1852,33 @@ export default function CreatorPage() {
               </button>
               {openSections.has('content') && <div style={bodyStyle}>
                 <div style={{ marginBottom: 8 }}>
-                  <label style={{ display: 'block', fontSize: 10, fontWeight: 500, color: '#6b7280', marginBottom: 2 }}>Numele produsului</label>
+                  <label style={{ display: 'block', fontSize: 10, fontWeight: 500, color: 'var(--foreground-muted)', marginBottom: 2 }}>Numele produsului</label>
                   <input value={productName} onChange={e => setProductName(e.target.value)}
                     placeholder="ex: Rochie de vară florală"
-                    style={{ width: '100%', padding: '7px 8px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 12, outline: 'none', boxSizing: 'border-box' }} />
+                    style={{ width: '100%', padding: '7px 8px', border: '1px solid var(--border)', borderRadius: 6, fontSize: 12, outline: 'none', boxSizing: 'border-box' }} />
                 </div>
                 <div style={{ marginBottom: 8 }}>
-                  <label style={{ display: 'block', fontSize: 10, fontWeight: 500, color: '#6b7280', marginBottom: 2 }}>Preț</label>
+                  <label style={{ display: 'block', fontSize: 10, fontWeight: 500, color: 'var(--foreground-muted)', marginBottom: 2 }}>Preț</label>
                   <input value={productPrice} onChange={e => setProductPrice(e.target.value)}
                     placeholder="ex: 149 RON"
-                    style={{ width: '100%', padding: '7px 8px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 12, outline: 'none', boxSizing: 'border-box' }} />
+                    style={{ width: '100%', padding: '7px 8px', border: '1px solid var(--border)', borderRadius: 6, fontSize: 12, outline: 'none', boxSizing: 'border-box' }} />
                 </div>
                 <div style={{ marginBottom: 8 }}>
-                  <label style={{ display: 'block', fontSize: 10, fontWeight: 500, color: '#6b7280', marginBottom: 2 }}>
-                    Text pe imagine <span style={{ fontWeight: 400, color: '#bbb' }}>(opțional)</span>
+                  <label style={{ display: 'block', fontSize: 10, fontWeight: 500, color: 'var(--foreground-muted)', marginBottom: 2 }}>
+                    Text pe imagine <span style={{ fontWeight: 400, color: 'var(--foreground-dim)' }}>(opțional)</span>
                   </label>
                   <input value={promoText} onChange={e => setPromoText(e.target.value)}
                     placeholder="ex: Livrare gratuită azi!"
-                    style={{ width: '100%', padding: '7px 8px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 12, outline: 'none', boxSizing: 'border-box' }} />
+                    style={{ width: '100%', padding: '7px 8px', border: '1px solid var(--border)', borderRadius: 6, fontSize: 12, outline: 'none', boxSizing: 'border-box' }} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: 10, fontWeight: 500, color: '#6b7280', marginBottom: 2 }}>
-                    Caption Facebook <span style={{ fontWeight: 400, color: '#bbb' }}>(opțional)</span>
+                  <label style={{ display: 'block', fontSize: 10, fontWeight: 500, color: 'var(--foreground-muted)', marginBottom: 2 }}>
+                    Caption Facebook <span style={{ fontWeight: 400, color: 'var(--foreground-dim)' }}>(opțional)</span>
                   </label>
                   <textarea value={caption} onChange={e => setCaption(e.target.value)}
                     placeholder="Textul postării de pe Facebook..."
                     rows={2}
-                    style={{ width: '100%', padding: '7px 8px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 12, outline: 'none', boxSizing: 'border-box', resize: 'vertical', fontFamily: 'inherit' }} />
+                    style={{ width: '100%', padding: '7px 8px', border: '1px solid var(--border)', borderRadius: 6, fontSize: 12, outline: 'none', boxSizing: 'border-box', resize: 'vertical', fontFamily: 'inherit' }} />
                 </div>
               </div>}
             </div>
@@ -1905,12 +1905,12 @@ export default function CreatorPage() {
               {posting ? 'Se postează...' : format === 'stories' ? '📤 Publică Story' : '📤 Postează pe Feed'}
             </button>
             <button onClick={() => setShowSchedule(true)}
-              style={{ padding: '10px 14px', background: '#fff', color: '#374151', border: '1px solid #e5e7eb', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
+              style={{ padding: '10px 14px', background: 'var(--bg-card)', color: 'var(--foreground)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
               title="Programează postarea">
               🗓
             </button>
             <button onClick={downloadImage}
-              style={{ padding: '10px 14px', background: '#fff', color: '#374151', border: '1px solid #e5e7eb', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>
+              style={{ padding: '10px 14px', background: 'var(--bg-card)', color: 'var(--foreground)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>
               ⬇
             </button>
           </div>
@@ -1927,29 +1927,29 @@ export default function CreatorPage() {
               position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
             }}>
-              <div style={{ background: '#fff', borderRadius: 12, padding: 28, width: 340, boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
-                <div style={{ fontSize: 16, fontWeight: 700, color: '#111827', marginBottom: 4 }}>Programează postarea</div>
-                <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 20 }}>
+              <div style={{ background: 'var(--bg-card)', borderRadius: 12, padding: 28, width: 340, boxShadow: '0 20px 60px rgba(0,0,0,0.2)', border: '1px solid var(--border)' }}>
+                <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--foreground)', marginBottom: 4 }}>Programează postarea</div>
+                <div style={{ fontSize: 13, color: 'var(--foreground-muted)', marginBottom: 20 }}>
                   {format === 'stories' ? 'Story' : 'Feed'} • imaginea curentă din Creator
                 </div>
 
                 <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
                   <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: '#374151', marginBottom: 4 }}>Data</label>
+                    <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--foreground)', marginBottom: 4 }}>Data</label>
                     <input
                       type="date"
                       value={schedDate}
                       min={new Date().toISOString().split('T')[0]}
                       onChange={e => setSchedDate(e.target.value)}
-                      style={{ width: '100%', padding: '8px 10px', border: '1px solid #d1d5db', borderRadius: 7, fontSize: 13, outline: 'none', boxSizing: 'border-box' }}
+                      style={{ width: '100%', padding: '8px 10px', border: '1px solid var(--border)', borderRadius: 7, fontSize: 13, outline: 'none', boxSizing: 'border-box', background: 'var(--bg-deep)', color: 'var(--foreground)' }}
                     />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: '#374151', marginBottom: 4 }}>Ora</label>
+                    <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--foreground)', marginBottom: 4 }}>Ora</label>
                     <select
                       value={schedHour}
                       onChange={e => setSchedHour(e.target.value)}
-                      style={{ width: '100%', padding: '8px 10px', border: '1px solid #d1d5db', borderRadius: 7, fontSize: 13, outline: 'none', background: '#fff', boxSizing: 'border-box' }}
+                      style={{ width: '100%', padding: '8px 10px', border: '1px solid var(--border)', borderRadius: 7, fontSize: 13, outline: 'none', background: 'var(--bg-deep)', boxSizing: 'border-box', color: 'var(--foreground)' }}
                     >
                       {SCHED_HOURS.map(h => <option key={h} value={h}>{h}</option>)}
                     </select>
@@ -1959,7 +1959,7 @@ export default function CreatorPage() {
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button
                     onClick={() => setShowSchedule(false)}
-                    style={{ flex: 1, padding: '10px', background: '#f3f4f6', color: '#374151', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
+                    style={{ flex: 1, padding: '10px', background: 'var(--surface)', color: 'var(--foreground)', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
                   >
                     Anulează
                   </button>
@@ -1980,12 +1980,12 @@ export default function CreatorPage() {
 
         {/* Dreapta — preview canvas */}
         <div style={{ flex: 1, maxWidth: 440 }}>
-          <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 8 }}>
+          <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--foreground)', marginBottom: 8 }}>
             Preview — {FORMATS[format].w}×{FORMATS[format].h}px
-            {productImage && <span style={{ fontWeight: 400, color: '#9ca3af', marginLeft: 8 }}>Trage pentru a repoziționa</span>}
+            {productImage && <span style={{ fontWeight: 400, color: 'var(--foreground-dim)', marginLeft: 8 }}>Trage pentru a repoziționa</span>}
           </label>
           <div style={{
-            border: '1px solid #e5e7eb', borderRadius: 12, overflow: 'hidden',
+            border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden',
             boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
             cursor: productImage ? (isDragging.current ? 'grabbing' : 'grab') : 'default',
             aspectRatio: `1 / ${canvasAspect}`,
@@ -2004,7 +2004,7 @@ export default function CreatorPage() {
               onTouchEnd={onTouchEnd}
             />
           </div>
-          <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 6, textAlign: 'center' }}>
+          <div style={{ fontSize: 11, color: 'var(--foreground-dim)', marginTop: 6, textAlign: 'center' }}>
             {format === 'instagram' ? 'Instagram Feed & Reels — 1:1' : format === 'stories' ? 'Stories — 9:16' : 'Facebook Feed — 2:3 portret'}
           </div>
         </div>

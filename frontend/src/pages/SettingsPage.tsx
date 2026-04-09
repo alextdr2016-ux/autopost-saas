@@ -124,7 +124,7 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div style={{ padding: 32, color: '#6b7280', fontSize: 14 }}>
+      <div style={{ padding: 32, color: 'var(--foreground-muted)', fontSize: 14 }}>
         Se încarcă setările...
       </div>
     )
@@ -132,13 +132,13 @@ export default function SettingsPage() {
 
   return (
     <div style={{ padding: 32, maxWidth: 680 }}>
-      <h1 style={{ fontSize: 22, fontWeight: 700, color: '#111827', marginBottom: 28 }}>Setări</h1>
+      <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--foreground)', marginBottom: 28 }}>Setări</h1>
 
-      <section style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', padding: 24, marginBottom: 20 }}>
-        <h2 style={{ fontSize: 15, fontWeight: 600, color: '#111827', marginBottom: 16 }}>Conectare site</h2>
+      <section style={{ background: 'var(--bg-card)', borderRadius: 10, border: '1px solid var(--border)', padding: 24, marginBottom: 20 }}>
+        <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 16 }}>Conectare site</h2>
 
         <div style={{ marginBottom: 16 }}>
-          <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#374151', marginBottom: 8 }}>
+          <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--foreground)', marginBottom: 8 }}>
             Tipul site-ului
           </label>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -153,9 +153,9 @@ export default function SettingsPage() {
                 onClick={() => setSiteType(opt.id as typeof siteType)}
                 style={{
                   padding: '8px 16px', borderRadius: 7, fontSize: 13, fontWeight: 500,
-                  border: siteType === opt.id ? '2px solid #3b82f6' : '1px solid #d1d5db',
-                  background: siteType === opt.id ? '#eff6ff' : '#fff',
-                  color: siteType === opt.id ? '#1d4ed8' : '#374151',
+                  border: siteType === opt.id ? '2px solid #3b82f6' : '1px solid var(--border)',
+                  background: siteType === opt.id ? '#eff6ff' : 'var(--bg-card)',
+                  color: siteType === opt.id ? '#1d4ed8' : 'var(--foreground)',
                   cursor: 'pointer',
                 }}
               >{opt.label}</button>
@@ -164,7 +164,7 @@ export default function SettingsPage() {
         </div>
 
         <div>
-          <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#374151', marginBottom: 6 }}>
+          <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--foreground)', marginBottom: 6 }}>
             {siteType === 'rss' ? 'URL feed RSS' : 'URL API site'}
           </label>
           <input
@@ -172,17 +172,17 @@ export default function SettingsPage() {
             onChange={e => setSiteUrl(e.target.value)}
             placeholder="https://site.ro/wp-json/wp/v2"
             style={{
-              width: '100%', padding: '10px 12px', border: '1px solid #d1d5db',
-              borderRadius: 8, fontSize: 13, outline: 'none', color: '#374151',
+              width: '100%', padding: '10px 12px', border: '1px solid var(--border)',
+              borderRadius: 8, fontSize: 13, outline: 'none', color: 'var(--foreground)', background: 'var(--bg-deep)',
             }}
           />
         </div>
       </section>
 
       {siteType === 'shopify' && (
-        <section style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', padding: 24, marginBottom: 20 }}>
-          <h2 style={{ fontSize: 15, fontWeight: 600, color: '#111827', marginBottom: 4 }}>Conectare Shopify</h2>
-          <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 16 }}>
+        <section style={{ background: 'var(--bg-card)', borderRadius: 10, border: '1px solid var(--border)', padding: 24, marginBottom: 20 }}>
+          <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 4 }}>Conectare Shopify</h2>
+          <p style={{ fontSize: 13, color: 'var(--foreground-muted)', marginBottom: 16 }}>
             Introdu datele magazinului tău Shopify pentru a importa produse automat.
           </p>
 
@@ -197,7 +197,7 @@ export default function SettingsPage() {
           )}
 
           <div style={{ marginBottom: 14 }}>
-            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#374151', marginBottom: 6 }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--foreground)', marginBottom: 6 }}>
               Store URL
             </label>
             <input
@@ -205,14 +205,14 @@ export default function SettingsPage() {
               onChange={e => setShopifyStore(e.target.value)}
               placeholder="magazin.myshopify.com"
               style={{
-                width: '100%', padding: '10px 12px', border: '1px solid #d1d5db',
-                borderRadius: 8, fontSize: 13, outline: 'none', color: '#374151',
+                width: '100%', padding: '10px 12px', border: '1px solid var(--border)',
+                borderRadius: 8, fontSize: 13, outline: 'none', color: 'var(--foreground)', background: 'var(--bg-deep)',
               }}
             />
           </div>
 
           <div style={{ marginBottom: 16 }}>
-            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#374151', marginBottom: 6 }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--foreground)', marginBottom: 6 }}>
               Admin API Access Token
             </label>
             <input
@@ -221,11 +221,11 @@ export default function SettingsPage() {
               onChange={e => setShopifyToken(e.target.value)}
               placeholder="shpat_..."
               style={{
-                width: '100%', padding: '10px 12px', border: '1px solid #d1d5db',
-                borderRadius: 8, fontSize: 13, outline: 'none', color: '#374151',
+                width: '100%', padding: '10px 12px', border: '1px solid var(--border)',
+                borderRadius: 8, fontSize: 13, outline: 'none', color: 'var(--foreground)', background: 'var(--bg-deep)',
               }}
             />
-            <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>
+            <div style={{ fontSize: 11, color: 'var(--foreground-dim)', marginTop: 4 }}>
               Găsești tokenul în Shopify Admin → Apps → Develop apps → API credentials
             </div>
           </div>
@@ -249,8 +249,8 @@ export default function SettingsPage() {
         </section>
       )}
 
-      <section style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', padding: 24, marginBottom: 20 }}>
-        <h2 style={{ fontSize: 15, fontWeight: 600, color: '#111827', marginBottom: 16 }}>Ce se postează</h2>
+      <section style={{ background: 'var(--bg-card)', borderRadius: 10, border: '1px solid var(--border)', padding: 24, marginBottom: 20 }}>
+        <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 16 }}>Ce se postează</h2>
         {[
           { key: 'products', label: 'Produse', desc: 'Postări cu produse din catalog, banner generat automat' },
           { key: 'articles', label: 'Articole blog', desc: 'Postări cu articolele de pe site' },
@@ -258,7 +258,7 @@ export default function SettingsPage() {
         ].map(item => (
           <label key={item.key} style={{
             display: 'flex', alignItems: 'flex-start', gap: 12, padding: '10px 0',
-            borderBottom: item.key !== 'videos' ? '1px solid #f3f4f6' : 'none',
+            borderBottom: item.key !== 'videos' ? '1px solid var(--border)' : 'none',
             cursor: 'pointer',
           }}>
             <input
@@ -268,16 +268,16 @@ export default function SettingsPage() {
               style={{ marginTop: 2, width: 16, height: 16, accentColor: '#3b82f6', cursor: 'pointer' }}
             />
             <div>
-              <div style={{ fontSize: 14, fontWeight: 500, color: '#374151' }}>{item.label}</div>
-              <div style={{ fontSize: 12, color: '#9ca3af' }}>{item.desc}</div>
+              <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--foreground)' }}>{item.label}</div>
+              <div style={{ fontSize: 12, color: 'var(--foreground-dim)' }}>{item.desc}</div>
             </div>
           </label>
         ))}
       </section>
 
-      <section style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', padding: 24, marginBottom: 20 }}>
-        <h2 style={{ fontSize: 15, fontWeight: 600, color: '#111827', marginBottom: 6 }}>Ore de postare</h2>
-        <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 16 }}>
+      <section style={{ background: 'var(--bg-card)', borderRadius: 10, border: '1px solid var(--border)', padding: 24, marginBottom: 20 }}>
+        <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 6 }}>Ore de postare</h2>
+        <p style={{ fontSize: 13, color: 'var(--foreground-muted)', marginBottom: 16 }}>
           Alege orele la care se vor face postările. Selectate: {times.join(', ')}
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 6, marginBottom: 16 }}>
@@ -289,9 +289,9 @@ export default function SettingsPage() {
                 onClick={() => toggleTime(t)}
                 style={{
                   padding: '7px 4px', borderRadius: 7, fontSize: 12, fontWeight: 600,
-                  border: active ? '2px solid #3b82f6' : '1px solid #d1d5db',
-                  background: active ? '#eff6ff' : '#fff',
-                  color: active ? '#1d4ed8' : '#374151',
+                  border: active ? '2px solid #3b82f6' : '1px solid var(--border)',
+                  background: active ? '#eff6ff' : 'var(--bg-card)',
+                  color: active ? '#1d4ed8' : 'var(--foreground)',
                   cursor: 'pointer', fontFamily: 'monospace', textAlign: 'center',
                 }}
               >{t}</button>
@@ -299,15 +299,15 @@ export default function SettingsPage() {
           })}
         </div>
         <div>
-          <label style={{ fontSize: 13, fontWeight: 500, color: '#374151', display: 'block', marginBottom: 6 }}>
+          <label style={{ fontSize: 13, fontWeight: 500, color: 'var(--foreground)', display: 'block', marginBottom: 6 }}>
             Fus orar
           </label>
           <select
             value={timezone}
             onChange={e => setTimezone(e.target.value)}
             style={{
-              padding: '8px 12px', border: '1px solid #d1d5db',
-              borderRadius: 8, fontSize: 13, color: '#374151', outline: 'none',
+              padding: '8px 12px', border: '1px solid var(--border)',
+              borderRadius: 8, fontSize: 13, color: 'var(--foreground)', outline: 'none', background: 'var(--bg-deep)',
             }}
           >
             <option value="Europe/Bucharest">Europe/Bucharest (UTC+3 vara)</option>
@@ -331,7 +331,7 @@ export default function SettingsPage() {
           onClick={save}
           disabled={saving}
           style={{
-            padding: '11px 28px', background: saving ? '#6b7280' : '#111827', color: '#fff',
+            padding: '11px 28px', background: saving ? '#6b7280' : 'var(--foreground)', color: 'var(--bg-deep)',
             border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600,
             cursor: saving ? 'not-allowed' : 'pointer',
           }}

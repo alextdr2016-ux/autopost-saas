@@ -110,18 +110,18 @@ export default function SchedulePage() {
 
   return (
     <div style={{ padding: 32, maxWidth: 700 }}>
-      <h1 style={{ fontSize: 22, fontWeight: 700, color: '#111827', marginBottom: 6 }}>Programări</h1>
-      <p style={{ color: '#6b7280', fontSize: 14, marginBottom: 28 }}>
+      <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--foreground)', marginBottom: 6 }}>Programări</h1>
+      <p style={{ color: 'var(--foreground-muted)', fontSize: 14, marginBottom: 28 }}>
         Programează postări la o dată și oră specifică.
       </p>
 
       {/* ── Formular programare ── */}
-      <section style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', padding: 24, marginBottom: 24 }}>
-        <h2 style={{ fontSize: 15, fontWeight: 600, color: '#111827', marginBottom: 16 }}>Postare nouă programată</h2>
+      <section style={{ background: 'var(--bg-card)', borderRadius: 10, border: '1px solid var(--border)', padding: 24, marginBottom: 24 }}>
+        <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 16 }}>Postare nouă programată</h2>
 
         {/* Tip postare */}
         <div style={{ marginBottom: 14 }}>
-          <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#374151', marginBottom: 8 }}>
+          <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--foreground)', marginBottom: 8 }}>
             Tip postare
           </label>
           <div style={{ display: 'flex', gap: 8 }}>
@@ -131,9 +131,9 @@ export default function SchedulePage() {
                 onClick={() => setPostType(t)}
                 style={{
                   padding: '8px 20px', borderRadius: 7, fontSize: 13, fontWeight: 500,
-                  border: postType === t ? '2px solid #3b82f6' : '1px solid #d1d5db',
-                  background: postType === t ? '#eff6ff' : '#fff',
-                  color: postType === t ? '#1d4ed8' : '#374151',
+                  border: postType === t ? '2px solid #3b82f6' : '1px solid var(--border)',
+                  background: postType === t ? '#eff6ff' : 'var(--bg-card)',
+                  color: postType === t ? '#1d4ed8' : 'var(--foreground)',
                   cursor: 'pointer',
                 }}
               >
@@ -146,7 +146,7 @@ export default function SchedulePage() {
         {/* Data + Ora */}
         <div style={{ display: 'flex', gap: 12, marginBottom: 14 }}>
           <div style={{ flex: 1 }}>
-            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#374151', marginBottom: 6 }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--foreground)', marginBottom: 6 }}>
               Data
             </label>
             <input
@@ -155,23 +155,23 @@ export default function SchedulePage() {
               min={today}
               onChange={e => setDate(e.target.value)}
               style={{
-                width: '100%', padding: '9px 12px', border: '1px solid #d1d5db',
-                borderRadius: 8, fontSize: 13, color: '#374151', outline: 'none',
-                boxSizing: 'border-box',
+                width: '100%', padding: '9px 12px', border: '1px solid var(--border)',
+                borderRadius: 8, fontSize: 13, color: 'var(--foreground)', outline: 'none',
+                boxSizing: 'border-box', background: 'var(--bg-deep)',
               }}
             />
           </div>
           <div style={{ flex: 1 }}>
-            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#374151', marginBottom: 6 }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--foreground)', marginBottom: 6 }}>
               Ora
             </label>
             <select
               value={hour}
               onChange={e => setHour(e.target.value)}
               style={{
-                width: '100%', padding: '9px 12px', border: '1px solid #d1d5db',
-                borderRadius: 8, fontSize: 13, color: '#374151', outline: 'none',
-                boxSizing: 'border-box', background: '#fff',
+                width: '100%', padding: '9px 12px', border: '1px solid var(--border)',
+                borderRadius: 8, fontSize: 13, color: 'var(--foreground)', outline: 'none',
+                boxSizing: 'border-box', background: 'var(--bg-deep)',
               }}
             >
               {HOURS.map(h => (
@@ -183,7 +183,7 @@ export default function SchedulePage() {
 
         {/* Caption */}
         <div style={{ marginBottom: 16 }}>
-          <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#374151', marginBottom: 6 }}>
+          <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--foreground)', marginBottom: 6 }}>
             Caption postare
           </label>
           <textarea
@@ -192,12 +192,12 @@ export default function SchedulePage() {
             placeholder="Textul care va apărea la postare..."
             rows={4}
             style={{
-              width: '100%', padding: '10px 12px', border: '1px solid #d1d5db',
-              borderRadius: 8, fontSize: 13, color: '#374151', outline: 'none',
-              resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit',
+              width: '100%', padding: '10px 12px', border: '1px solid var(--border)',
+              borderRadius: 8, fontSize: 13, color: 'var(--foreground)', outline: 'none',
+              resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', background: 'var(--bg-deep)',
             }}
           />
-          <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>
+          <div style={{ fontSize: 11, color: 'var(--foreground-dim)', marginTop: 4 }}>
             {caption.length} / 2200 caractere
           </div>
         </div>
@@ -233,8 +233,8 @@ export default function SchedulePage() {
       </section>
 
       {/* ── Lista programate ── */}
-      <section style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', padding: 24, marginBottom: 24 }}>
-        <h2 style={{ fontSize: 15, fontWeight: 600, color: '#111827', marginBottom: 16 }}>
+      <section style={{ background: 'var(--bg-card)', borderRadius: 10, border: '1px solid var(--border)', padding: 24, marginBottom: 24 }}>
+        <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 16 }}>
           În așteptare
           {pending.length > 0 && (
             <span style={{
@@ -245,16 +245,16 @@ export default function SchedulePage() {
         </h2>
 
         {loading ? (
-          <div style={{ color: '#9ca3af', fontSize: 13 }}>Se încarcă...</div>
+          <div style={{ color: 'var(--foreground-dim)', fontSize: 13 }}>Se încarcă...</div>
         ) : pending.length === 0 ? (
-          <div style={{ color: '#9ca3af', fontSize: 13 }}>Nicio postare programată.</div>
+          <div style={{ color: 'var(--foreground-dim)', fontSize: 13 }}>Nicio postare programată.</div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {pending.map(p => (
               <div key={p.sk} style={{
                 display: 'flex', alignItems: 'flex-start', gap: 12,
-                padding: '12px 14px', background: '#f9fafb',
-                borderRadius: 8, border: '1px solid #e5e7eb',
+                padding: '12px 14px', background: 'var(--surface)',
+                borderRadius: 8, border: '1px solid var(--border)',
               }}>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
@@ -265,18 +265,18 @@ export default function SchedulePage() {
                     }}>
                       {p.post_type === 'story' ? 'Story' : 'Feed'}
                     </span>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: '#374151', fontFamily: 'monospace' }}>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--foreground)', fontFamily: 'monospace' }}>
                       {formatDate(p.scheduled_at)}
                     </span>
                   </div>
-                  <div style={{ fontSize: 13, color: '#6b7280', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                  <div style={{ fontSize: 13, color: 'var(--foreground-muted)', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
                     {p.caption.length > 120 ? p.caption.slice(0, 120) + '...' : p.caption}
                   </div>
                 </div>
                 <button
                   onClick={() => deleteScheduled(p.sk)}
                   style={{
-                    padding: '6px 12px', background: '#fff', color: '#dc2626',
+                    padding: '6px 12px', background: 'var(--bg-card)', color: '#dc2626',
                     border: '1px solid #fecaca', borderRadius: 6, fontSize: 12,
                     fontWeight: 500, cursor: 'pointer', flexShrink: 0,
                   }}
@@ -291,20 +291,20 @@ export default function SchedulePage() {
 
       {/* ── Istoric ── */}
       {done.length > 0 && (
-        <section style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', padding: 24 }}>
-          <h2 style={{ fontSize: 15, fontWeight: 600, color: '#111827', marginBottom: 16 }}>Istoric</h2>
+        <section style={{ background: 'var(--bg-card)', borderRadius: 10, border: '1px solid var(--border)', padding: 24 }}>
+          <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 16 }}>Istoric</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {done.slice(0, 20).map(p => (
               <div key={p.sk} style={{
                 display: 'flex', alignItems: 'center', gap: 10,
-                padding: '10px 14px', background: '#f9fafb',
-                borderRadius: 8, border: '1px solid #e5e7eb',
+                padding: '10px 14px', background: 'var(--surface)',
+                borderRadius: 8, border: '1px solid var(--border)',
               }}>
                 <span style={{
                   width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
                   background: p.status === 'done' ? '#10b981' : '#ef4444',
                 }} />
-                <span style={{ fontSize: 12, color: '#9ca3af', fontFamily: 'monospace', flexShrink: 0 }}>
+                <span style={{ fontSize: 12, color: 'var(--foreground-dim)', fontFamily: 'monospace', flexShrink: 0 }}>
                   {formatDate(p.scheduled_at)}
                 </span>
                 <span style={{
@@ -314,7 +314,7 @@ export default function SchedulePage() {
                 }}>
                   {p.post_type === 'story' ? 'Story' : 'Feed'}
                 </span>
-                <span style={{ fontSize: 13, color: '#6b7280', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <span style={{ fontSize: 13, color: 'var(--foreground-muted)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {p.caption}
                 </span>
                 {p.status === 'error' && p.error && (

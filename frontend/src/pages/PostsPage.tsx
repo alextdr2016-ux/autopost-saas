@@ -82,8 +82,8 @@ export default function PostsPage() {
     <div style={{ padding: 32 }}>
       <div style={{ marginBottom: 24, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: '#111827' }}>Istoric postări</h1>
-          <p style={{ color: '#6b7280', fontSize: 14, marginTop: 4 }}>
+          <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--foreground)' }}>Istoric postări</h1>
+          <p style={{ color: 'var(--foreground-muted)', fontSize: 14, marginTop: 4 }}>
             {counts.all} postări totale · {counts.success} reușite · {counts.error} erori
           </p>
         </div>
@@ -94,16 +94,16 @@ export default function PostsPage() {
               onClick={() => setFilter(key)}
               style={{
                 padding: '7px 16px', borderRadius: 7, fontSize: 13, fontWeight: 500,
-                border: filter === key ? '2px solid #3b82f6' : '1px solid #e5e7eb',
-                background: filter === key ? '#eff6ff' : '#fff',
-                color: filter === key ? '#1d4ed8' : '#374151',
+                border: filter === key ? '2px solid #3b82f6' : '1px solid var(--border)',
+                background: filter === key ? '#eff6ff' : 'var(--bg-card)',
+                color: filter === key ? '#1d4ed8' : 'var(--foreground)',
                 cursor: 'pointer',
               }}
             >
               {label}
               <span style={{
-                marginLeft: 6, fontSize: 11, background: filter === key ? '#dbeafe' : '#f3f4f6',
-                color: filter === key ? '#1e40af' : '#6b7280',
+                marginLeft: 6, fontSize: 11, background: filter === key ? '#dbeafe' : 'var(--surface)',
+                color: filter === key ? '#1e40af' : 'var(--foreground-muted)',
                 padding: '1px 6px', borderRadius: 10, fontWeight: 600,
               }}>
                 {counts[key]}
@@ -114,31 +114,31 @@ export default function PostsPage() {
       </div>
 
       {loading ? (
-        <div style={{ color: '#6b7280', fontSize: 14, padding: 32, textAlign: 'center' }}>
+        <div style={{ color: 'var(--foreground-muted)', fontSize: 14, padding: 32, textAlign: 'center' }}>
           Se încarcă postările...
         </div>
       ) : filtered.length === 0 ? (
         <div style={{
-          background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb',
+          background: 'var(--bg-card)', borderRadius: 10, border: '1px solid var(--border)',
           padding: 48, textAlign: 'center',
         }}>
           <div style={{ fontSize: 32, marginBottom: 12 }}>📭</div>
-          <div style={{ fontSize: 15, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
+          <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 6 }}>
             Nicio postare găsită
           </div>
-          <div style={{ fontSize: 13, color: '#9ca3af' }}>
+          <div style={{ fontSize: 13, color: 'var(--foreground-dim)' }}>
             Postările automate vor apărea aici după prima rulare.
           </div>
         </div>
       ) : (
-        <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
+        <div style={{ background: 'var(--bg-card)', borderRadius: 10, border: '1px solid var(--border)', overflow: 'hidden' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
-              <tr style={{ background: '#f9fafb' }}>
+              <tr style={{ background: 'var(--surface)' }}>
                 {['Data', 'Tip', 'Titlu / Produs', 'Status', 'Link Facebook'].map(h => (
                   <th key={h} style={{
                     padding: '10px 18px', textAlign: 'left', fontSize: 12,
-                    fontWeight: 600, color: '#6b7280', textTransform: 'uppercase',
+                    fontWeight: 600, color: 'var(--foreground-muted)', textTransform: 'uppercase',
                     letterSpacing: '0.05em', whiteSpace: 'nowrap',
                   }}>{h}</th>
                 ))}
@@ -150,10 +150,10 @@ export default function PostsPage() {
                 const fbLink = getFbLink(p.fb_post_id)
                 return (
                   <tr key={i} style={{
-                    borderTop: '1px solid #f3f4f6',
+                    borderTop: '1px solid var(--border)',
                     background: p.status === 'error' ? '#fff5f5' : undefined,
                   }}>
-                    <td style={{ padding: '12px 18px', fontSize: 12, color: '#6b7280', whiteSpace: 'nowrap' }}>
+                    <td style={{ padding: '12px 18px', fontSize: 12, color: 'var(--foreground-muted)', whiteSpace: 'nowrap' }}>
                       {formatDate(p.created_at)}
                     </td>
                     <td style={{ padding: '12px 18px' }}>
@@ -165,7 +165,7 @@ export default function PostsPage() {
                       </span>
                     </td>
                     <td style={{
-                      padding: '12px 18px', fontSize: 13, color: '#374151',
+                      padding: '12px 18px', fontSize: 13, color: 'var(--foreground)',
                       fontWeight: 500, maxWidth: 240,
                       overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                     }}>
@@ -194,7 +194,7 @@ export default function PostsPage() {
                           Vezi postarea ↗
                         </a>
                       ) : (
-                        <span style={{ fontSize: 12, color: '#d1d5db' }}>—</span>
+                        <span style={{ fontSize: 12, color: 'var(--foreground-dim)' }}>—</span>
                       )}
                     </td>
                   </tr>

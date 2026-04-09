@@ -106,8 +106,8 @@ export default function VideosPage() {
   return (
     <div style={{ padding: 32 }}>
       <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: '#111827' }}>Videouri</h1>
-        <p style={{ color: '#6b7280', fontSize: 14, marginTop: 4 }}>
+        <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--foreground)' }}>Videouri</h1>
+        <p style={{ color: 'var(--foreground-muted)', fontSize: 14, marginTop: 4 }}>
           Uploadează videouri — se vor posta automat conform programului tău.
         </p>
       </div>
@@ -118,18 +118,18 @@ export default function VideosPage() {
         onDragLeave={() => setDragging(false)}
         onClick={() => inputRef.current?.click()}
         style={{
-          border: `2px dashed ${dragging ? '#3b82f6' : '#d1d5db'}`,
+          border: `2px dashed ${dragging ? '#3b82f6' : 'var(--border)'}`,
           borderRadius: 12, padding: '40px 24px', textAlign: 'center',
-          background: dragging ? '#eff6ff' : '#fff', cursor: 'pointer',
+          background: dragging ? '#eff6ff' : 'var(--bg-card)', cursor: 'pointer',
           marginBottom: 28, transition: 'all 0.15s',
         }}
       >
         <input ref={inputRef} type="file" accept="video/*" style={{ display: 'none' }} onChange={handleFileChange} />
         <div style={{ fontSize: 40, marginBottom: 12 }}>📤</div>
-        <div style={{ fontWeight: 600, color: '#374151', marginBottom: 6 }}>
+        <div style={{ fontWeight: 600, color: 'var(--foreground)', marginBottom: 6 }}>
           Trage video-ul aici sau apasă pentru a selecta
         </div>
-        <div style={{ fontSize: 13, color: '#9ca3af' }}>
+        <div style={{ fontSize: 13, color: 'var(--foreground-dim)' }}>
           MP4, MOV · Max 500 MB · Recomandat 9:16 pentru Stories
         </div>
       </div>
@@ -151,32 +151,32 @@ export default function VideosPage() {
               width: `${uploadPct}%`, transition: 'width 0.1s',
             }} />
           </div>
-          <div style={{ fontSize: 11, color: '#6b7280', marginTop: 6 }}>
+          <div style={{ fontSize: 11, color: 'var(--foreground-muted)', marginTop: 6 }}>
             Upload direct în S3 — serverul nu este implicat
           </div>
         </div>
       )}
 
-      <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
-        <div style={{ padding: '14px 20px', borderBottom: '1px solid #f3f4f6', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ fontSize: 15, fontWeight: 600, color: '#111827' }}>
+      <div style={{ background: 'var(--bg-card)', borderRadius: 10, border: '1px solid var(--border)', overflow: 'hidden' }}>
+        <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)' }}>
             Videouri uploadate ({videos.length})
           </h2>
-          <span style={{ fontSize: 12, color: '#9ca3af' }}>
+          <span style={{ fontSize: 12, color: 'var(--foreground-dim)' }}>
             {videos.filter(v => v.status === 'pending').length} în așteptare
           </span>
         </div>
 
         {loading ? (
-          <div style={{ padding: '24px 20px', color: '#9ca3af', fontSize: 14 }}>Se încarcă...</div>
+          <div style={{ padding: '24px 20px', color: 'var(--foreground-dim)', fontSize: 14 }}>Se încarcă...</div>
         ) : videos.length === 0 ? (
-          <div style={{ padding: '24px 20px', color: '#9ca3af', fontSize: 14 }}>
+          <div style={{ padding: '24px 20px', color: 'var(--foreground-dim)', fontSize: 14 }}>
             Nu ai videouri uploadate încă.
           </div>
         ) : (
           videos.map((v, i) => (
             <div key={v.video_id} style={{
-              padding: '14px 20px', borderTop: i > 0 ? '1px solid #f3f4f6' : 'none',
+              padding: '14px 20px', borderTop: i > 0 ? '1px solid var(--border)' : 'none',
               display: 'flex', alignItems: 'center', gap: 14,
             }}>
               <div style={{
@@ -186,18 +186,18 @@ export default function VideosPage() {
               }}>▶</div>
 
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 500, color: '#374151', fontSize: 14, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ fontWeight: 500, color: 'var(--foreground)', fontSize: 14, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {v.filename}
                 </div>
-                <div style={{ fontSize: 12, color: '#9ca3af', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: 12, color: 'var(--foreground-dim)', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {v.s3_key}
                 </div>
               </div>
 
               <span style={{
                 fontSize: 11, padding: '3px 10px', borderRadius: 20, fontWeight: 600,
-                background: v.status === 'used' ? '#f3f4f6' : '#ecfdf5',
-                color: v.status === 'used' ? '#6b7280' : '#065f46',
+                background: v.status === 'used' ? 'var(--surface)' : '#ecfdf5',
+                color: v.status === 'used' ? 'var(--foreground-muted)' : '#065f46',
               }}>
                 {v.status === 'used' ? 'Folosit' : '● În așteptare'}
               </span>
@@ -206,7 +206,7 @@ export default function VideosPage() {
                 <button
                   onClick={() => deleteVideo(v)}
                   style={{
-                    padding: '6px 12px', background: '#fff', border: '1px solid #e5e7eb',
+                    padding: '6px 12px', background: 'var(--bg-card)', border: '1px solid var(--border)',
                     borderRadius: 6, fontSize: 12, color: '#dc2626', cursor: 'pointer',
                   }}
                 >
