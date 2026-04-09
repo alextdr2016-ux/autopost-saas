@@ -135,7 +135,7 @@ export default function SettingsPage() {
   const postTypeItems = [
     { key: 'products', label: t('productsLabel'), desc: t('productsDesc') },
     { key: 'articles', label: t('articlesLabel'), desc: t('articlesDesc') },
-    { key: 'videos', label: t('videosLabel'), desc: t('videosDesc') },
+    { key: 'videos', label: t('videosLabel'), desc: t('videosSettingsDesc') },
   ]
 
   return (

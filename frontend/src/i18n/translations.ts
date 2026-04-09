@@ -130,7 +130,7 @@ const translations = {
   articlesLabel: { en: 'Blog articles', ro: 'Articole blog' },
   articlesDesc: { en: 'Posts with site articles', ro: 'Postari cu articolele de pe site' },
   videosLabel: { en: 'Videos', ro: 'Videouri' },
-  videosDesc: { en: 'Uploaded videos, posted on Stories and Feed', ro: 'Videouri uploadate de tine, postate pe Stories si Feed' },
+  videosSettingsDesc: { en: 'Uploaded videos, posted on Stories and Feed', ro: 'Videouri uploadate de tine, postate pe Stories si Feed' },
   postingHours: { en: 'Posting hours', ro: 'Ore de postare' },
   postingHoursDesc: { en: 'Choose the hours for posting. Selected:', ro: 'Alege orele la care se vor face postarile. Selectate:' },
   timezone: { en: 'Timezone', ro: 'Fus orar' },
