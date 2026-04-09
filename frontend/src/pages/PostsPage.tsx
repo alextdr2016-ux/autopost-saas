@@ -151,7 +151,7 @@ export default function PostsPage() {
                 return (
                   <tr key={i} style={{
                     borderTop: '1px solid var(--border)',
-                    background: p.status === 'error' ? '#fff5f5' : undefined,
+                    background: p.status === 'error' ? 'var(--destructive-bg)' : undefined,
                   }}>
                     <td style={{ padding: '12px 18px', fontSize: 12, color: 'var(--foreground-muted)', whiteSpace: 'nowrap' }}>
                       {formatDate(p.created_at)}
