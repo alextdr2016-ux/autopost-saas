@@ -1,4 +1,5 @@
 import { type Page } from '../App'
+import { useLanguage } from '../i18n/LanguageContext'
 
 /* ── SVG Icon components (Lucide-style, no emoji) ── */
 const Icons = {
@@ -55,14 +56,14 @@ const Icons = {
   ),
 }
 
-const navItems: { id: Page; label: string; icon: keyof typeof Icons }[] = [
-  { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
-  { id: 'creator', label: 'Creator postari', icon: 'creator' },
-  { id: 'schedule', label: 'Programari', icon: 'schedule' },
-  { id: 'connect', label: 'Conexiuni', icon: 'connect' },
-  { id: 'videos', label: 'Videouri', icon: 'videos' },
-  { id: 'posts', label: 'Istoric postari', icon: 'posts' },
-  { id: 'settings', label: 'Setari', icon: 'settings' },
+const navKeys: { id: Page; labelKey: 'sidebarDashboard' | 'sidebarCreator' | 'sidebarSchedule' | 'sidebarConnect' | 'sidebarVideos' | 'sidebarPosts' | 'sidebarSettings'; icon: keyof typeof Icons }[] = [
+  { id: 'dashboard', labelKey: 'sidebarDashboard', icon: 'dashboard' },
+  { id: 'creator', labelKey: 'sidebarCreator', icon: 'creator' },
+  { id: 'schedule', labelKey: 'sidebarSchedule', icon: 'schedule' },
+  { id: 'connect', labelKey: 'sidebarConnect', icon: 'connect' },
+  { id: 'videos', labelKey: 'sidebarVideos', icon: 'videos' },
+  { id: 'posts', labelKey: 'sidebarPosts', icon: 'posts' },
+  { id: 'settings', labelKey: 'sidebarSettings', icon: 'settings' },
 ]
 
 interface Props {
@@ -73,6 +74,7 @@ interface Props {
 }
 
 export default function Sidebar({ currentPage, onNavigate, onLogout, fbConnected = false }: Props) {
+  const { t } = useLanguage()
   return (
     <aside style={{
       width: 260,
@@ -111,7 +113,7 @@ export default function Sidebar({ currentPage, onNavigate, onLogout, fbConnected
 
       {/* Navigation */}
       <nav style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
-        {navItems.map(item => {
+        {navKeys.map(item => {
           const active = currentPage === item.id
           return (
             <button
@@ -135,7 +137,7 @@ export default function Sidebar({ currentPage, onNavigate, onLogout, fbConnected
               }}
             >
               <div style={{ width: 18, height: 18, flexShrink: 0 }}>{Icons[item.icon]}</div>
-              {item.label}
+              {t(item.labelKey)}
             </button>
           )
         })}
@@ -161,7 +163,7 @@ export default function Sidebar({ currentPage, onNavigate, onLogout, fbConnected
         }}
       >
         <div style={{ width: 18, height: 18, flexShrink: 0 }}>{Icons.logout}</div>
-        Deconectare
+        {t('sidebarLogout')}
       </button>
 
       {/* Connection status */}
@@ -178,7 +180,7 @@ export default function Sidebar({ currentPage, onNavigate, onLogout, fbConnected
           background: fbConnected ? 'var(--success)' : 'var(--destructive)',
           boxShadow: fbConnected ? '0 0 6px var(--success)' : 'none',
         }} />
-        <span>{fbConnected ? 'Facebook conectat' : 'Facebook neconectat'}</span>
+        <span>{fbConnected ? t('fbConnected') : t('fbDisconnected')}</span>
       </div>
     </aside>
   )

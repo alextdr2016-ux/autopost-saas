@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { fetchAuthSession, signOut } from 'aws-amplify/auth'
 import './index.css'
+import { LanguageProvider, useLanguage } from './i18n/LanguageContext'
 import LandingPage from './pages/LandingPage'
 import DashboardPage from './pages/DashboardPage'
 import ConnectFacebookPage from './pages/ConnectFacebookPage'
@@ -15,7 +16,8 @@ export type Page = 'dashboard' | 'connect' | 'videos' | 'settings' | 'posts' | '
 
 const API_URL = import.meta.env.VITE_API_URL
 
-export default function App() {
+function AppInner() {
+  const { t } = useLanguage()
   const [loggedIn, setLoggedIn] = useState(false)
   const [checking, setChecking] = useState(true)
   const [page, setPage] = useState<Page>('dashboard')
@@ -59,7 +61,7 @@ export default function App() {
         minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
         background: 'var(--bg-deep)',
       }}>
-        <div style={{ color: 'var(--foreground-muted)', fontSize: 14 }}>Se incarca...</div>
+        <div style={{ color: 'var(--foreground-muted)', fontSize: 14 }}>{t('loading')}</div>
       </div>
     )
   }
@@ -81,5 +83,13 @@ export default function App() {
         {page === 'settings' && <SettingsPage />}
       </main>
     </div>
+  )
+}
+
+export default function App() {
+  return (
+    <LanguageProvider>
+      <AppInner />
+    </LanguageProvider>
   )
 }

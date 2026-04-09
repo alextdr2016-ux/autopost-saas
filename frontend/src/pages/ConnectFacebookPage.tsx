@@ -1,16 +1,18 @@
 import { useState, useEffect } from 'react'
 import { fetchAuthSession } from 'aws-amplify/auth'
+import { useLanguage } from '../i18n/LanguageContext'
 
 const API_URL = import.meta.env.VITE_API_URL
 
 async function getAuthHeader() {
   const session = await fetchAuthSession({ forceRefresh: false })
   const token = session.tokens?.idToken?.toString()
-  if (!token) throw new Error('Nu există sesiune activă')
+  if (!token) throw new Error('No active session')
   return { Authorization: token }
 }
 
 export default function ConnectFacebookPage() {
+  const { t } = useLanguage()
   const [fbStatus, setFbStatus] = useState<'disconnected' | 'connecting' | 'connected'>('disconnected')
   const [pageId, setPageId] = useState('')
   const [pageToken, setPageToken] = useState('')
@@ -44,7 +46,7 @@ export default function ConnectFacebookPage() {
 
   const saveFacebook = async () => {
     if (!pageToken.trim()) {
-      setError('Introdu Page Access Token-ul')
+      setError(t('enterPageToken'))
       return
     }
     setSaving(true)
@@ -62,14 +64,14 @@ export default function ConnectFacebookPage() {
       })
       if (res.ok) {
         setFbStatus('connected')
-        setSuccess('Facebook conectat cu succes!')
+        setSuccess(t('fbConnectedSuccess'))
         setPageToken('')
         setTimeout(() => setSuccess(''), 3000)
       } else {
-        setError('Eroare la salvare. Încearcă din nou.')
+        setError(t('saveError'))
       }
     } catch (e) {
-      setError('Eroare de conexiune.')
+      setError(t('connectionError'))
     } finally {
       setSaving(false)
     }
@@ -77,7 +79,7 @@ export default function ConnectFacebookPage() {
 
   const saveInstagram = async () => {
     if (!igAccountId.trim()) {
-      setError('Introdu Instagram Account ID')
+      setError(t('enterIgId'))
       return
     }
     setSavingIg(true)
@@ -93,13 +95,13 @@ export default function ConnectFacebookPage() {
         })
       })
       if (res.ok) {
-        setSuccess('Instagram Account ID salvat!')
+        setSuccess(t('igIdSaved'))
         setTimeout(() => setSuccess(''), 3000)
       } else {
-        setError('Eroare la salvare. Încearcă din nou.')
+        setError(t('saveError'))
       }
     } catch (e) {
-      setError('Eroare de conexiune.')
+      setError(t('connectionError'))
     } finally {
       setSavingIg(false)
     }
@@ -112,13 +114,15 @@ export default function ConnectFacebookPage() {
     setError('')
   }
 
+  const tokenSteps = [t('tokenStep1'), t('tokenStep2'), t('tokenStep3'), t('tokenStep4'), t('tokenStep5')]
+
   return (
     <div style={{ padding: 32, maxWidth: 700 }}>
       <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--foreground)', marginBottom: 6 }}>
-        Conectare Facebook & Instagram
+        {t('connectTitle')}
       </h1>
       <p style={{ color: 'var(--foreground-muted)', fontSize: 14, marginBottom: 32 }}>
-        Conectează pagina ta de Facebook pentru a activa postarea automată.
+        {t('connectDesc')}
       </p>
 
       <div style={{
@@ -126,16 +130,10 @@ export default function ConnectFacebookPage() {
         padding: '16px 20px', marginBottom: 28,
       }}>
         <div style={{ fontSize: 13, fontWeight: 600, color: '#1d4ed8', marginBottom: 8 }}>
-          Cum obții Page Access Token
+          {t('howToGetToken')}
         </div>
         <ol style={{ paddingLeft: 18, margin: 0 }}>
-          {[
-            'Mergi la developers.facebook.com → Tools → Graph API Explorer',
-            'Selectează aplicația ta și pagina de Facebook',
-            'Adaugă permisiunile: pages_manage_posts, pages_read_engagement',
-            'Generează token și copiază-l aici',
-            'Pentru token permanent (60 zile) folosește Long-lived token',
-          ].map((s, i) => (
+          {tokenSteps.map((s, i) => (
             <li key={i} style={{ fontSize: 13, color: '#1e40af', marginBottom: 4 }}>{s}</li>
           ))}
         </ol>
@@ -146,7 +144,7 @@ export default function ConnectFacebookPage() {
           background: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: 8,
           padding: '12px 16px', marginBottom: 20, fontSize: 13, color: '#065f46', fontWeight: 500,
         }}>
-          ✓ {success}
+          {'\u2713'} {success}
         </div>
       )}
 
@@ -177,7 +175,7 @@ export default function ConnectFacebookPage() {
                 <span style={{
                   background: '#ecfdf5', color: '#065f46', fontSize: 11,
                   fontWeight: 600, padding: '2px 8px', borderRadius: 20,
-                }}>● Conectat</span>
+                }}>{'\u25CF'} {t('connected')}</span>
               )}
             </div>
 
@@ -185,7 +183,7 @@ export default function ConnectFacebookPage() {
               <div>
                 <div style={{ fontSize: 13, color: 'var(--foreground-muted)', marginBottom: 16 }}>
                   Page ID: <strong style={{ color: 'var(--foreground)', fontFamily: 'monospace' }}>{pageId}</strong>
-                  {' '}· Token stocat în <strong style={{ color: 'var(--foreground)' }}>AWS Secrets Manager</strong>
+                  {' '}{'\u00B7'} {t('tokenStoredIn')} <strong style={{ color: 'var(--foreground)' }}>AWS Secrets Manager</strong>
                 </div>
                 <div style={{ display: 'flex', gap: 10 }}>
                   <button
@@ -196,7 +194,7 @@ export default function ConnectFacebookPage() {
                       fontWeight: 500, cursor: 'pointer',
                     }}
                   >
-                    Actualizează token
+                    {t('updateToken')}
                   </button>
                   <button
                     onClick={disconnect}
@@ -206,7 +204,7 @@ export default function ConnectFacebookPage() {
                       fontWeight: 500, cursor: 'pointer',
                     }}
                   >
-                    Deconectează
+                    {t('disconnect')}
                   </button>
                 </div>
               </div>
@@ -253,7 +251,7 @@ export default function ConnectFacebookPage() {
                     fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer',
                   }}
                 >
-                  {saving ? 'Se salvează...' : 'Salvează & Conectează'}
+                  {saving ? t('saving') : t('saveAndConnect')}
                 </button>
               </div>
             )}
@@ -271,22 +269,19 @@ export default function ConnectFacebookPage() {
             background: 'linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: '#fff', fontSize: 22,
-          }}>📷</div>
+          }}>{'\u{1F4F7}'}</div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-              <span style={{ fontWeight: 600, color: 'var(--foreground)', fontSize: 16 }}>Instagram Business</span>
+              <span style={{ fontWeight: 600, color: 'var(--foreground)', fontSize: 16 }}>{t('igBusiness')}</span>
               {fbStatus === 'connected' && (
                 <span style={{
                   background: '#ecfdf5', color: '#065f46', fontSize: 11,
                   fontWeight: 600, padding: '2px 8px', borderRadius: 20,
-                }}>● Conectat automat</span>
+                }}>{'\u25CF'} {t('igAutoConnected')}</span>
               )}
             </div>
             <p style={{ fontSize: 13, color: 'var(--foreground-muted)', marginBottom: fbStatus === 'connected' ? 16 : 0 }}>
-              {fbStatus === 'connected'
-                ? 'Conectat prin pagina Facebook. Introdu Instagram Business Account ID pentru a activa postarea.'
-                : 'Se conectează automat după conectarea Facebook-ului.'
-              }
+              {fbStatus === 'connected' ? t('igConnectedViaFb') : t('igAutoAfterFb')}
             </p>
             {fbStatus === 'connected' && (
               <div>
@@ -314,11 +309,11 @@ export default function ConnectFacebookPage() {
                       fontWeight: 600, cursor: savingIg ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap',
                     }}
                   >
-                    {savingIg ? 'Se salvează...' : 'Salvează'}
+                    {savingIg ? t('saving') : t('save')}
                   </button>
                 </div>
                 <div style={{ fontSize: 12, color: 'var(--foreground-dim)', marginTop: 6 }}>
-                  Găsești ID-ul în Facebook Business Manager sau via Graph API: GET /{'{page-id}'}?fields=instagram_business_account
+                  {t('igIdHelp')}
                 </div>
               </div>
             )}
@@ -330,8 +325,8 @@ export default function ConnectFacebookPage() {
         marginTop: 24, padding: '14px 18px', background: 'var(--surface)',
         border: '1px solid var(--border)', borderRadius: 8, fontSize: 12, color: 'var(--foreground-muted)',
       }}>
-        <strong style={{ color: 'var(--foreground)' }}>Securitate:</strong>{' '}
-        Token-ul tău Facebook este stocat criptat în AWS Secrets Manager și nu este niciodată expus în frontend.
+        <strong style={{ color: 'var(--foreground)' }}>{t('security')}</strong>{' '}
+        {t('securityNote')}
       </div>
     </div>
   )

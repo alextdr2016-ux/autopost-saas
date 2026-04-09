@@ -1,16 +1,18 @@
 import { useState, useEffect } from 'react'
 import { fetchAuthSession } from 'aws-amplify/auth'
+import { useLanguage } from '../i18n/LanguageContext'
 
 const API_URL = import.meta.env.VITE_API_URL
 
 async function getAuthHeader() {
   const session = await fetchAuthSession({ forceRefresh: false })
   const token = session.tokens?.idToken?.toString()
-  if (!token) throw new Error('Nu există sesiune activă')
+  if (!token) throw new Error('No active session')
   return { Authorization: token }
 }
 
 export default function SettingsPage() {
+  const { t } = useLanguage()
   const [siteType, setSiteType] = useState<'extended' | 'shopify' | 'woo' | 'rss'>('extended')
   const [siteUrl, setSiteUrl] = useState('')
   const [times, setTimes] = useState(['09:00', '18:00'])
@@ -44,7 +46,7 @@ export default function SettingsPage() {
           if (data.shopify_connected) setShopifyConnected(true)
         }
       } catch (e) {
-        console.error('Eroare la încărcarea setărilor:', e)
+        console.error('Error loading settings:', e)
       } finally {
         setLoading(false)
       }
@@ -74,10 +76,10 @@ export default function SettingsPage() {
         setSaved(true)
         setTimeout(() => setSaved(false), 2500)
       } else {
-        setError('Eroare la salvare. Încearcă din nou.')
+        setError(t('saveError'))
       }
     } catch (e) {
-      setError('Eroare de conexiune.')
+      setError(t('connectionError'))
     } finally {
       setSaving(false)
     }
@@ -85,7 +87,7 @@ export default function SettingsPage() {
 
   const saveShopify = async () => {
     if (!shopifyToken.trim() || !shopifyStore.trim()) {
-      setError('Completează Store URL și Access Token')
+      setError(t('fillShopifyFields'))
       return
     }
     setShopifySaving(true)
@@ -107,10 +109,10 @@ export default function SettingsPage() {
         setShopifySaved(true)
         setTimeout(() => setShopifySaved(false), 3000)
       } else {
-        setError('Eroare la salvare Shopify.')
+        setError(t('shopifySaveError'))
       }
     } catch {
-      setError('Eroare de conexiune.')
+      setError(t('connectionError'))
     } finally {
       setShopifySaving(false)
     }
@@ -125,21 +127,27 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <div style={{ padding: 32, color: 'var(--foreground-muted)', fontSize: 14 }}>
-        Se încarcă setările...
+        {t('loadingSettings')}
       </div>
     )
   }
 
+  const postTypeItems = [
+    { key: 'products', label: t('productsLabel'), desc: t('productsDesc') },
+    { key: 'articles', label: t('articlesLabel'), desc: t('articlesDesc') },
+    { key: 'videos', label: t('videosLabel'), desc: t('videosDesc') },
+  ]
+
   return (
     <div style={{ padding: 32, maxWidth: 680 }}>
-      <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--foreground)', marginBottom: 28 }}>Setări</h1>
+      <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--foreground)', marginBottom: 28 }}>{t('settingsTitle')}</h1>
 
       <section style={{ background: 'var(--bg-card)', borderRadius: 10, border: '1px solid var(--border)', padding: 24, marginBottom: 20 }}>
-        <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 16 }}>Conectare site</h2>
+        <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 16 }}>{t('siteConnection')}</h2>
 
         <div style={{ marginBottom: 16 }}>
           <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--foreground)', marginBottom: 8 }}>
-            Tipul site-ului
+            {t('siteType')}
           </label>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {[
@@ -165,7 +173,7 @@ export default function SettingsPage() {
 
         <div>
           <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--foreground)', marginBottom: 6 }}>
-            {siteType === 'rss' ? 'URL feed RSS' : 'URL API site'}
+            {siteType === 'rss' ? t('rssUrl') : t('siteApiUrl')}
           </label>
           <input
             value={siteUrl}
@@ -181,9 +189,9 @@ export default function SettingsPage() {
 
       {siteType === 'shopify' && (
         <section style={{ background: 'var(--bg-card)', borderRadius: 10, border: '1px solid var(--border)', padding: 24, marginBottom: 20 }}>
-          <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 4 }}>Conectare Shopify</h2>
+          <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 4 }}>{t('shopifyConnection')}</h2>
           <p style={{ fontSize: 13, color: 'var(--foreground-muted)', marginBottom: 16 }}>
-            Introdu datele magazinului tău Shopify pentru a importa produse automat.
+            {t('shopifyDesc')}
           </p>
 
           {shopifyConnected && (
@@ -192,13 +200,13 @@ export default function SettingsPage() {
               padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#15803d',
               display: 'flex', alignItems: 'center', gap: 8,
             }}>
-              ✓ Shopify conectat — <strong>{shopifyStore}</strong>
+              {'\u2713'} {t('shopifyConnected')} — <strong>{shopifyStore}</strong>
             </div>
           )}
 
           <div style={{ marginBottom: 14 }}>
             <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--foreground)', marginBottom: 6 }}>
-              Store URL
+              {t('shopifyStoreUrl')}
             </label>
             <input
               value={shopifyStore}
@@ -213,7 +221,7 @@ export default function SettingsPage() {
 
           <div style={{ marginBottom: 16 }}>
             <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--foreground)', marginBottom: 6 }}>
-              Admin API Access Token
+              {t('shopifyTokenLabel')}
             </label>
             <input
               type="password"
@@ -226,7 +234,7 @@ export default function SettingsPage() {
               }}
             />
             <div style={{ fontSize: 11, color: 'var(--foreground-dim)', marginTop: 4 }}>
-              Găsești tokenul în Shopify Admin → Apps → Develop apps → API credentials
+              {t('shopifyTokenHelp')}
             </div>
           </div>
 
@@ -240,25 +248,21 @@ export default function SettingsPage() {
                 cursor: shopifySaving ? 'not-allowed' : 'pointer',
               }}
             >
-              {shopifySaving ? 'Se salvează...' : 'Conectează Shopify'}
+              {shopifySaving ? t('saving') : t('connectShopify')}
             </button>
             {shopifySaved && (
-              <span style={{ color: '#10b981', fontSize: 13, fontWeight: 500 }}>✓ Shopify conectat!</span>
+              <span style={{ color: '#10b981', fontSize: 13, fontWeight: 500 }}>{'\u2713'} {t('shopifyConnectedSuccess')}</span>
             )}
           </div>
         </section>
       )}
 
       <section style={{ background: 'var(--bg-card)', borderRadius: 10, border: '1px solid var(--border)', padding: 24, marginBottom: 20 }}>
-        <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 16 }}>Ce se postează</h2>
-        {[
-          { key: 'products', label: 'Produse', desc: 'Postări cu produse din catalog, banner generat automat' },
-          { key: 'articles', label: 'Articole blog', desc: 'Postări cu articolele de pe site' },
-          { key: 'videos', label: 'Videouri', desc: 'Videouri uploadate de tine, postate pe Stories și Feed' },
-        ].map(item => (
+        <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 16 }}>{t('whatGetsPosted')}</h2>
+        {postTypeItems.map((item, idx) => (
           <label key={item.key} style={{
             display: 'flex', alignItems: 'flex-start', gap: 12, padding: '10px 0',
-            borderBottom: item.key !== 'videos' ? '1px solid var(--border)' : 'none',
+            borderBottom: idx !== postTypeItems.length - 1 ? '1px solid var(--border)' : 'none',
             cursor: 'pointer',
           }}>
             <input
@@ -276,17 +280,17 @@ export default function SettingsPage() {
       </section>
 
       <section style={{ background: 'var(--bg-card)', borderRadius: 10, border: '1px solid var(--border)', padding: 24, marginBottom: 20 }}>
-        <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 6 }}>Ore de postare</h2>
+        <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 6 }}>{t('postingHours')}</h2>
         <p style={{ fontSize: 13, color: 'var(--foreground-muted)', marginBottom: 16 }}>
-          Alege orele la care se vor face postările. Selectate: {times.join(', ')}
+          {t('postingHoursDesc')} {times.join(', ')}
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 6, marginBottom: 16 }}>
-          {allTimes.map(t => {
-            const active = times.includes(t)
+          {allTimes.map(time => {
+            const active = times.includes(time)
             return (
               <button
-                key={t}
-                onClick={() => toggleTime(t)}
+                key={time}
+                onClick={() => toggleTime(time)}
                 style={{
                   padding: '7px 4px', borderRadius: 7, fontSize: 12, fontWeight: 600,
                   border: active ? '2px solid #3b82f6' : '1px solid var(--border)',
@@ -294,13 +298,13 @@ export default function SettingsPage() {
                   color: active ? '#1d4ed8' : 'var(--foreground)',
                   cursor: 'pointer', fontFamily: 'monospace', textAlign: 'center',
                 }}
-              >{t}</button>
+              >{time}</button>
             )
           })}
         </div>
         <div>
           <label style={{ fontSize: 13, fontWeight: 500, color: 'var(--foreground)', display: 'block', marginBottom: 6 }}>
-            Fus orar
+            {t('timezone')}
           </label>
           <select
             value={timezone}
@@ -310,7 +314,7 @@ export default function SettingsPage() {
               borderRadius: 8, fontSize: 13, color: 'var(--foreground)', outline: 'none', background: 'var(--bg-deep)',
             }}
           >
-            <option value="Europe/Bucharest">Europe/Bucharest (UTC+3 vara)</option>
+            <option value="Europe/Bucharest">Europe/Bucharest (UTC+3 summer)</option>
             <option value="Europe/London">Europe/London</option>
             <option value="America/New_York">America/New_York</option>
           </select>
@@ -336,11 +340,11 @@ export default function SettingsPage() {
             cursor: saving ? 'not-allowed' : 'pointer',
           }}
         >
-          {saving ? 'Se salvează...' : 'Salvează setările'}
+          {saving ? t('saving') : t('saveSettings')}
         </button>
         {saved && (
           <span style={{ color: '#10b981', fontSize: 14, fontWeight: 500 }}>
-            ✓ Salvat în DynamoDB
+            {'\u2713'} {t('savedToDynamo')}
           </span>
         )}
       </div>

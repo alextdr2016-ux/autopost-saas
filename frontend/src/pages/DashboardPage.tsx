@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { fetchAuthSession } from 'aws-amplify/auth'
 import { type Page } from '../App'
+import { useLanguage } from '../i18n/LanguageContext'
+import type { Lang } from '../i18n/translations'
 
 const API_URL = import.meta.env.VITE_API_URL
 
@@ -50,10 +52,10 @@ const XIcon = (
 )
 
 /* ── Helpers ── */
-function formatDate(iso: string): string {
+function formatDate(iso: string, lang: Lang): string {
   try {
     const d = new Date(iso)
-    return d.toLocaleDateString('ro-RO', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+    return d.toLocaleDateString(lang === 'ro' ? 'ro-RO' : 'en-US', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
   } catch { return iso }
 }
 
@@ -97,6 +99,7 @@ interface Props {
 }
 
 export default function DashboardPage({ onNavigate, theme, onToggleTheme }: Props) {
+  const { t, lang, setLang } = useLanguage()
   const [posts, setPosts] = useState<PostItem[]>([])
   const [videosPending, setVideosPending] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -113,7 +116,6 @@ export default function DashboardPage({ onNavigate, theme, onToggleTheme }: Prop
 
       const headers = { Authorization: `Bearer ${token}` }
 
-      // Fetch posts + videos in parallel
       const [postsRes, videosRes] = await Promise.all([
         fetch(`${API_URL}/posts`, { headers }),
         fetch(`${API_URL}/videos`, { headers }),
@@ -121,14 +123,12 @@ export default function DashboardPage({ onNavigate, theme, onToggleTheme }: Prop
 
       if (postsRes.ok) {
         const data = await postsRes.json()
-        // API returns array directly, not {posts: [...]}
         const postsArr = Array.isArray(data) ? data : (data.posts || [])
         setPosts(postsArr)
       }
 
       if (videosRes.ok) {
         const data = await videosRes.json()
-        // API returns array directly, not {videos: [...]}
         const videosArr = Array.isArray(data) ? data : (data.videos || [])
         const pending = videosArr.filter((v: { status: string }) => v.status === 'pending')
         setVideosPending(pending.length)
@@ -144,35 +144,35 @@ export default function DashboardPage({ onNavigate, theme, onToggleTheme }: Prop
   stats.videosPending = videosPending
 
   const todayPosts = posts.filter(p => isToday(p.created_at))
-  const recentPosts = posts.slice(0, 8) // last 8 posts
+  const recentPosts = posts.slice(0, 8)
 
   const statCards = [
     {
-      label: 'Postari azi',
+      label: t('postsToday'),
       value: stats.postsToday.toString(),
       dotColor: 'var(--accent)',
-      sub: todayPosts.filter(p => p.status === 'success').length + ' reusit(e)',
+      sub: todayPosts.filter(p => p.status === 'success').length + ' ' + t('successCount'),
       changeType: 'neutral' as const,
     },
     {
-      label: 'Rata succes',
+      label: t('successRate'),
       value: stats.successRate + '%',
       dotColor: 'var(--success)',
-      sub: stats.postsThisMonth + ' postari luna aceasta',
+      sub: stats.postsThisMonth + ' ' + t('postsThisMonth'),
       changeType: (stats.successRate >= 90 ? 'up' : stats.successRate >= 70 ? 'neutral' : 'down') as 'up' | 'neutral' | 'down',
     },
     {
-      label: 'Videouri pending',
+      label: t('videosPending'),
       value: stats.videosPending.toString(),
       dotColor: 'var(--warning)',
-      sub: 'Gata de postare',
+      sub: t('readyToPost'),
       changeType: 'neutral' as const,
     },
     {
-      label: 'Erori luna aceasta',
+      label: t('errorsThisMonth'),
       value: stats.totalErrors.toString(),
       dotColor: stats.totalErrors > 0 ? 'var(--destructive)' : 'var(--success)',
-      sub: stats.totalErrors === 0 ? 'Totul functioneaza!' : 'Verifica istoricul',
+      sub: stats.totalErrors === 0 ? t('allWorking') : t('checkHistory'),
       changeType: (stats.totalErrors === 0 ? 'up' : 'down') as 'up' | 'down',
     },
   ]
@@ -184,16 +184,37 @@ export default function DashboardPage({ onNavigate, theme, onToggleTheme }: Prop
         display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32,
       }}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--foreground)' }}>Dashboard</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--foreground)' }}>{t('dashboardTitle')}</h1>
           <p style={{ color: 'var(--foreground-muted)', marginTop: 4, fontSize: 14 }}>
-            {new Date().toLocaleDateString('ro-RO', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+            {new Date().toLocaleDateString(lang === 'ro' ? 'ro-RO' : 'en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
           </p>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          {/* Language switcher */}
+          <div style={{
+            display: 'flex', borderRadius: 'var(--radius-sm)',
+            border: '1px solid var(--border)', overflow: 'hidden',
+          }}>
+            {(['en', 'ro'] as Lang[]).map(l => (
+              <button
+                key={l}
+                onClick={() => setLang(l)}
+                style={{
+                  padding: '8px 12px', fontSize: 12, fontWeight: 600,
+                  border: 'none', cursor: 'pointer',
+                  background: lang === l ? 'var(--accent)' : 'var(--surface)',
+                  color: lang === l ? '#fff' : 'var(--foreground-muted)',
+                  fontFamily: 'var(--font)',
+                }}
+              >
+                {l === 'en' ? 'EN' : 'RO'}
+              </button>
+            ))}
+          </div>
           {/* Theme toggle */}
           <button
             onClick={onToggleTheme}
-            aria-label="Schimba tema"
+            aria-label={t('toggleTheme')}
             style={{
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               width: 44, height: 44,
@@ -228,7 +249,7 @@ export default function DashboardPage({ onNavigate, theme, onToggleTheme }: Prop
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 5v14"/><path d="M5 12h14"/>
             </svg>
-            Creaza postare
+            {t('createPost')}
           </button>
         </div>
       </div>
@@ -239,7 +260,7 @@ export default function DashboardPage({ onNavigate, theme, onToggleTheme }: Prop
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           padding: 60, color: 'var(--foreground-muted)',
         }}>
-          Se incarca datele...
+          {t('loadingData')}
         </div>
       ) : (
         <>
@@ -293,7 +314,7 @@ export default function DashboardPage({ onNavigate, theme, onToggleTheme }: Prop
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                 padding: '16px 20px', borderBottom: '1px solid var(--border)',
               }}>
-                <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)' }}>Postari recente</h2>
+                <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)' }}>{t('recentPosts')}</h2>
                 <button
                   onClick={() => onNavigate('posts')}
                   style={{
@@ -303,19 +324,19 @@ export default function DashboardPage({ onNavigate, theme, onToggleTheme }: Prop
                     cursor: 'pointer', fontFamily: 'var(--font)', fontWeight: 500,
                   }}
                 >
-                  Vezi toate
+                  {t('viewAll')}
                 </button>
               </div>
 
               {recentPosts.length === 0 ? (
                 <div style={{ padding: 40, textAlign: 'center', color: 'var(--foreground-muted)' }}>
-                  Nicio postare inca. Creeaza prima ta postare!
+                  {t('noPostsYet')}
                 </div>
               ) : (
                 <table style={{ width: '100%', borderCollapse: 'collapse' }} role="table">
                   <thead>
                     <tr>
-                      {['Titlu', 'Tip', 'Data', 'Status'].map(h => (
+                      {[t('colTitle'), t('colType'), t('colDate'), t('colStatus')].map(h => (
                         <th key={h} style={{
                           textAlign: 'left', fontSize: 11, textTransform: 'uppercase',
                           letterSpacing: '0.05em', color: 'var(--foreground-dim)',
@@ -332,7 +353,7 @@ export default function DashboardPage({ onNavigate, theme, onToggleTheme }: Prop
                           padding: '14px 20px', fontSize: 13, color: 'var(--foreground)',
                           maxWidth: 280, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                         }}>
-                          {p.title || '(fara titlu)'}
+                          {p.title || t('noTitle')}
                         </td>
                         <td style={{ padding: '14px 20px' }}>
                           <span style={{
@@ -340,10 +361,10 @@ export default function DashboardPage({ onNavigate, theme, onToggleTheme }: Prop
                             background: p.type === 'video' ? 'rgba(139,92,246,0.1)' : p.type === 'article' ? 'var(--success-bg)' : 'var(--accent-glow)',
                             color: p.type === 'video' ? '#8b5cf6' : p.type === 'article' ? 'var(--success)' : 'var(--accent)',
                             textTransform: 'capitalize',
-                          }}>{p.type === 'product' ? 'Produs' : p.type === 'article' ? 'Articol' : 'Video'}</span>
+                          }}>{p.type === 'product' ? t('typeProduct') : p.type === 'article' ? t('typeArticle') : t('typeVideo')}</span>
                         </td>
                         <td style={{ padding: '14px 20px', fontSize: 13, color: 'var(--foreground-muted)' }}>
-                          {formatDate(p.created_at)}
+                          {formatDate(p.created_at, lang)}
                         </td>
                         <td style={{ padding: '14px 20px' }}>
                           <span style={{
@@ -354,7 +375,7 @@ export default function DashboardPage({ onNavigate, theme, onToggleTheme }: Prop
                             color: p.status === 'success' ? 'var(--success)' : 'var(--destructive)',
                           }}>
                             {p.status === 'success' ? CheckIcon : XIcon}
-                            {p.status === 'success' ? 'Reusit' : 'Eroare'}
+                            {p.status === 'success' ? t('statusSuccess') : t('statusError')}
                           </span>
                         </td>
                       </tr>
@@ -366,7 +387,6 @@ export default function DashboardPage({ onNavigate, theme, onToggleTheme }: Prop
 
             {/* Right panel - Quick Stats & Actions */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-              {/* Template queue status */}
               <div style={{
                 background: 'var(--bg-card)',
                 border: '1px solid var(--border)',
@@ -377,34 +397,14 @@ export default function DashboardPage({ onNavigate, theme, onToggleTheme }: Prop
                 <div style={{
                   padding: '16px 20px', borderBottom: '1px solid var(--border)',
                 }}>
-                  <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)' }}>Actiuni rapide</h2>
+                  <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)' }}>{t('quickActions')}</h2>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '16px 20px' }}>
-                  <QuickAction
-                    label="Creaza postare cu template"
-                    icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>}
-                    onClick={() => onNavigate('creator')}
-                  />
-                  <QuickAction
-                    label="Conecteaza Facebook"
-                    icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>}
-                    onClick={() => onNavigate('connect')}
-                  />
-                  <QuickAction
-                    label="Upload video"
-                    icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>}
-                    onClick={() => onNavigate('videos')}
-                  />
-                  <QuickAction
-                    label="Vezi istoric postari"
-                    icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>}
-                    onClick={() => onNavigate('posts')}
-                  />
-                  <QuickAction
-                    label="Configureaza setarile"
-                    icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>}
-                    onClick={() => onNavigate('settings')}
-                  />
+                  <QuickAction label={t('qaCreateTemplate')} icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>} onClick={() => onNavigate('creator')} />
+                  <QuickAction label={t('qaConnectFb')} icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>} onClick={() => onNavigate('connect')} />
+                  <QuickAction label={t('qaUploadVideo')} icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>} onClick={() => onNavigate('videos')} />
+                  <QuickAction label={t('qaViewHistory')} icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>} onClick={() => onNavigate('posts')} />
+                  <QuickAction label={t('qaSettings')} icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>} onClick={() => onNavigate('settings')} />
                 </div>
               </div>
 
@@ -418,13 +418,13 @@ export default function DashboardPage({ onNavigate, theme, onToggleTheme }: Prop
                   boxShadow: 'var(--card-shadow)',
                 }}>
                   <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 16, color: 'var(--foreground)' }}>
-                    Distributie luna aceasta
+                    {t('distributionThisMonth')}
                   </h3>
                   {['product', 'article', 'video'].map(type => {
                     const count = posts.filter(p => isThisMonth(p.created_at) && p.type === type).length
                     const total = stats.postsThisMonth || 1
                     const pct = Math.round((count / total) * 100)
-                    const labels: Record<string, string> = { product: 'Produse', article: 'Articole', video: 'Videouri' }
+                    const labels: Record<string, string> = { product: t('products'), article: t('articles'), video: t('videos') }
                     const colors: Record<string, string> = { product: 'var(--accent)', article: 'var(--success)', video: '#8b5cf6' }
                     return (
                       <div key={type} style={{ marginBottom: 12 }}>

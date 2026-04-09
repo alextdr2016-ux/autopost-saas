@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
 import { fetchAuthSession } from 'aws-amplify/auth'
+import { useLanguage } from '../i18n/LanguageContext'
 
 const API_URL = import.meta.env.VITE_API_URL
 
 async function getAuthHeader() {
   const session = await fetchAuthSession({ forceRefresh: false })
   const token = session.tokens?.idToken?.toString()
-  if (!token) throw new Error('Nu există sesiune activă')
+  if (!token) throw new Error('No active session')
   return { Authorization: token }
 }
 
@@ -18,6 +19,7 @@ interface Video {
 }
 
 export default function VideosPage() {
+  const { t } = useLanguage()
   const [videos, setVideos] = useState<Video[]>([])
   const [dragging, setDragging] = useState(false)
   const [uploading, setUploading] = useState<string | null>(null)
@@ -34,7 +36,7 @@ export default function VideosPage() {
         setVideos(data)
       }
     } catch (e) {
-      console.error('Eroare la încărcarea videouri:', e)
+      console.error('Error loading videos:', e)
     } finally {
       setLoading(false)
     }
@@ -77,7 +79,7 @@ export default function VideosPage() {
   }
 
   const deleteVideo = async (video: Video) => {
-    if (!confirm(`Ștergi "${video.filename}"?`)) return
+    if (!confirm(`${t('deleteConfirm')} "${video.filename}"?`)) return
     try {
       const headers = await getAuthHeader()
       await fetch(`${API_URL}/videos`, {
@@ -106,9 +108,9 @@ export default function VideosPage() {
   return (
     <div style={{ padding: 32 }}>
       <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--foreground)' }}>Videouri</h1>
+        <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--foreground)' }}>{t('videosTitle')}</h1>
         <p style={{ color: 'var(--foreground-muted)', fontSize: 14, marginTop: 4 }}>
-          Uploadează videouri — se vor posta automat conform programului tău.
+          {t('videosDesc')}
         </p>
       </div>
 
@@ -125,12 +127,12 @@ export default function VideosPage() {
         }}
       >
         <input ref={inputRef} type="file" accept="video/*" style={{ display: 'none' }} onChange={handleFileChange} />
-        <div style={{ fontSize: 40, marginBottom: 12 }}>📤</div>
+        <div style={{ fontSize: 40, marginBottom: 12 }}>{'\u{1F4E4}'}</div>
         <div style={{ fontWeight: 600, color: 'var(--foreground)', marginBottom: 6 }}>
-          Trage video-ul aici sau apasă pentru a selecta
+          {t('dragOrClick')}
         </div>
         <div style={{ fontSize: 13, color: 'var(--foreground-dim)' }}>
-          MP4, MOV · Max 500 MB · Recomandat 9:16 pentru Stories
+          {t('videoFormats')}
         </div>
       </div>
 
@@ -141,7 +143,7 @@ export default function VideosPage() {
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
             <span style={{ fontSize: 13, fontWeight: 500, color: '#1e40af' }}>
-              Se uploadează: {uploading}
+              {t('uploading')} {uploading}
             </span>
             <span style={{ fontSize: 13, color: '#3b82f6', fontWeight: 600 }}>{uploadPct}%</span>
           </div>
@@ -152,7 +154,7 @@ export default function VideosPage() {
             }} />
           </div>
           <div style={{ fontSize: 11, color: 'var(--foreground-muted)', marginTop: 6 }}>
-            Upload direct în S3 — serverul nu este implicat
+            {t('directUploadS3')}
           </div>
         </div>
       )}
@@ -160,18 +162,18 @@ export default function VideosPage() {
       <div style={{ background: 'var(--bg-card)', borderRadius: 10, border: '1px solid var(--border)', overflow: 'hidden' }}>
         <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)' }}>
-            Videouri uploadate ({videos.length})
+            {t('uploadedVideos')} ({videos.length})
           </h2>
           <span style={{ fontSize: 12, color: 'var(--foreground-dim)' }}>
-            {videos.filter(v => v.status === 'pending').length} în așteptare
+            {videos.filter(v => v.status === 'pending').length} {t('waiting')}
           </span>
         </div>
 
         {loading ? (
-          <div style={{ padding: '24px 20px', color: 'var(--foreground-dim)', fontSize: 14 }}>Se încarcă...</div>
+          <div style={{ padding: '24px 20px', color: 'var(--foreground-dim)', fontSize: 14 }}>{t('loading')}</div>
         ) : videos.length === 0 ? (
           <div style={{ padding: '24px 20px', color: 'var(--foreground-dim)', fontSize: 14 }}>
-            Nu ai videouri uploadate încă.
+            {t('noVideosYet')}
           </div>
         ) : (
           videos.map((v, i) => (
@@ -183,7 +185,7 @@ export default function VideosPage() {
                 width: 56, height: 40, background: '#1f2937', borderRadius: 6,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 color: '#fff', fontSize: 18, flexShrink: 0,
-              }}>▶</div>
+              }}>{'\u25B6'}</div>
 
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontWeight: 500, color: 'var(--foreground)', fontSize: 14, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -199,7 +201,7 @@ export default function VideosPage() {
                 background: v.status === 'used' ? 'var(--surface)' : '#ecfdf5',
                 color: v.status === 'used' ? 'var(--foreground-muted)' : '#065f46',
               }}>
-                {v.status === 'used' ? 'Folosit' : '● În așteptare'}
+                {v.status === 'used' ? t('statusUsed') : `\u25CF ${t('statusWaiting')}`}
               </span>
 
               {v.status !== 'used' && (
@@ -210,7 +212,7 @@ export default function VideosPage() {
                     borderRadius: 6, fontSize: 12, color: '#dc2626', cursor: 'pointer',
                   }}
                 >
-                  Șterge
+                  {t('delete')}
                 </button>
               )}
             </div>

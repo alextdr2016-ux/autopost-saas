@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
 import { fetchAuthSession } from 'aws-amplify/auth'
+import { useLanguage } from '../i18n/LanguageContext'
 
 const API_URL = import.meta.env.VITE_API_URL
 
 async function getAuthHeader() {
   const session = await fetchAuthSession({ forceRefresh: false })
   const token = session.tokens?.idToken?.toString()
-  if (!token) throw new Error('Nu există sesiune activă')
+  if (!token) throw new Error('No active session')
   return { Authorization: token }
 }
 
@@ -21,28 +22,28 @@ interface ScheduledPost {
   error?: string
 }
 
-function formatDate(iso: string) {
-  try {
-    return new Date(iso).toLocaleString('ro-RO', {
-      day: '2-digit', month: '2-digit', year: 'numeric',
-      hour: '2-digit', minute: '2-digit',
-    })
-  } catch { return iso }
-}
-
 export default function SchedulePage() {
+  const { t, lang } = useLanguage()
   const [posts, setPosts] = useState<ScheduledPost[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
-  // Form state
   const today = new Date().toISOString().split('T')[0]
   const [date, setDate] = useState(today)
   const [hour, setHour] = useState('09:00')
   const [caption, setCaption] = useState('')
   const [postType, setPostType] = useState<'feed' | 'story'>('feed')
+
+  function formatDate(iso: string) {
+    try {
+      return new Date(iso).toLocaleString(lang === 'ro' ? 'ro-RO' : 'en-US', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit',
+      })
+    } catch { return iso }
+  }
 
   const load = async () => {
     try {
@@ -62,8 +63,8 @@ export default function SchedulePage() {
   useEffect(() => { load() }, [])
 
   const schedule = async () => {
-    if (!caption.trim()) { setError('Scrie un caption pentru postare'); return }
-    if (!date) { setError('Selectează data'); return }
+    if (!caption.trim()) { setError(t('writeCaptionError')); return }
+    if (!date) { setError(t('selectDateError')); return }
 
     setSaving(true)
     setError('')
@@ -76,16 +77,16 @@ export default function SchedulePage() {
         body: JSON.stringify({ scheduled_at, caption, post_type: postType }),
       })
       if (res.ok) {
-        setSuccess('Postare programată!')
+        setSuccess(t('postScheduled'))
         setCaption('')
         setTimeout(() => setSuccess(''), 3000)
         load()
       } else {
         const data = await res.json()
-        setError(data.error || 'Eroare la programare.')
+        setError(data.error || t('scheduleError'))
       }
     } catch {
-      setError('Eroare de conexiune.')
+      setError(t('connectionError'))
     } finally {
       setSaving(false)
     }
@@ -101,7 +102,7 @@ export default function SchedulePage() {
       })
       setPosts(p => p.filter(x => x.sk !== sk))
     } catch {
-      setError('Eroare la ștergere.')
+      setError(t('deleteError'))
     }
   }
 
@@ -110,44 +111,41 @@ export default function SchedulePage() {
 
   return (
     <div style={{ padding: 32, maxWidth: 700 }}>
-      <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--foreground)', marginBottom: 6 }}>Programări</h1>
+      <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--foreground)', marginBottom: 6 }}>{t('scheduleTitle')}</h1>
       <p style={{ color: 'var(--foreground-muted)', fontSize: 14, marginBottom: 28 }}>
-        Programează postări la o dată și oră specifică.
+        {t('scheduleDesc')}
       </p>
 
-      {/* ── Formular programare ── */}
       <section style={{ background: 'var(--bg-card)', borderRadius: 10, border: '1px solid var(--border)', padding: 24, marginBottom: 24 }}>
-        <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 16 }}>Postare nouă programată</h2>
+        <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 16 }}>{t('newScheduledPost')}</h2>
 
-        {/* Tip postare */}
         <div style={{ marginBottom: 14 }}>
           <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--foreground)', marginBottom: 8 }}>
-            Tip postare
+            {t('postTypeLabel')}
           </label>
           <div style={{ display: 'flex', gap: 8 }}>
-            {(['feed', 'story'] as const).map(t => (
+            {(['feed', 'story'] as const).map(tp => (
               <button
-                key={t}
-                onClick={() => setPostType(t)}
+                key={tp}
+                onClick={() => setPostType(tp)}
                 style={{
                   padding: '8px 20px', borderRadius: 7, fontSize: 13, fontWeight: 500,
-                  border: postType === t ? '2px solid #3b82f6' : '1px solid var(--border)',
-                  background: postType === t ? '#eff6ff' : 'var(--bg-card)',
-                  color: postType === t ? '#1d4ed8' : 'var(--foreground)',
+                  border: postType === tp ? '2px solid #3b82f6' : '1px solid var(--border)',
+                  background: postType === tp ? '#eff6ff' : 'var(--bg-card)',
+                  color: postType === tp ? '#1d4ed8' : 'var(--foreground)',
                   cursor: 'pointer',
                 }}
               >
-                {t === 'feed' ? 'Feed' : 'Story'}
+                {tp === 'feed' ? t('feed') : t('story')}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Data + Ora */}
         <div style={{ display: 'flex', gap: 12, marginBottom: 14 }}>
           <div style={{ flex: 1 }}>
             <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--foreground)', marginBottom: 6 }}>
-              Data
+              {t('dateLabel')}
             </label>
             <input
               type="date"
@@ -163,7 +161,7 @@ export default function SchedulePage() {
           </div>
           <div style={{ flex: 1 }}>
             <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--foreground)', marginBottom: 6 }}>
-              Ora
+              {t('hourLabel')}
             </label>
             <select
               value={hour}
@@ -181,15 +179,14 @@ export default function SchedulePage() {
           </div>
         </div>
 
-        {/* Caption */}
         <div style={{ marginBottom: 16 }}>
           <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--foreground)', marginBottom: 6 }}>
-            Caption postare
+            {t('captionLabel')}
           </label>
           <textarea
             value={caption}
             onChange={e => setCaption(e.target.value)}
-            placeholder="Textul care va apărea la postare..."
+            placeholder={t('captionPlaceholder')}
             rows={4}
             style={{
               width: '100%', padding: '10px 12px', border: '1px solid var(--border)',
@@ -198,7 +195,7 @@ export default function SchedulePage() {
             }}
           />
           <div style={{ fontSize: 11, color: 'var(--foreground-dim)', marginTop: 4 }}>
-            {caption.length} / 2200 caractere
+            {caption.length} / 2200 {t('characters')}
           </div>
         </div>
 
@@ -215,7 +212,7 @@ export default function SchedulePage() {
             background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8,
             padding: '10px 14px', marginBottom: 12, fontSize: 13, color: '#15803d', fontWeight: 500,
           }}>
-            ✓ {success}
+            {'\u2713'} {success}
           </div>
         )}
 
@@ -228,14 +225,13 @@ export default function SchedulePage() {
             fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer',
           }}
         >
-          {saving ? 'Se programează...' : 'Programează postarea'}
+          {saving ? t('scheduling') : t('schedulePost')}
         </button>
       </section>
 
-      {/* ── Lista programate ── */}
       <section style={{ background: 'var(--bg-card)', borderRadius: 10, border: '1px solid var(--border)', padding: 24, marginBottom: 24 }}>
         <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 16 }}>
-          În așteptare
+          {t('pendingTitle')}
           {pending.length > 0 && (
             <span style={{
               marginLeft: 8, background: '#eff6ff', color: '#1d4ed8',
@@ -245,9 +241,9 @@ export default function SchedulePage() {
         </h2>
 
         {loading ? (
-          <div style={{ color: 'var(--foreground-dim)', fontSize: 13 }}>Se încarcă...</div>
+          <div style={{ color: 'var(--foreground-dim)', fontSize: 13 }}>{t('loading')}</div>
         ) : pending.length === 0 ? (
-          <div style={{ color: 'var(--foreground-dim)', fontSize: 13 }}>Nicio postare programată.</div>
+          <div style={{ color: 'var(--foreground-dim)', fontSize: 13 }}>{t('noPendingPosts')}</div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {pending.map(p => (
@@ -263,7 +259,7 @@ export default function SchedulePage() {
                       background: p.post_type === 'story' ? '#fdf4ff' : '#eff6ff',
                       color: p.post_type === 'story' ? '#7c3aed' : '#1d4ed8',
                     }}>
-                      {p.post_type === 'story' ? 'Story' : 'Feed'}
+                      {p.post_type === 'story' ? t('story') : t('feed')}
                     </span>
                     <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--foreground)', fontFamily: 'monospace' }}>
                       {formatDate(p.scheduled_at)}
@@ -281,7 +277,7 @@ export default function SchedulePage() {
                     fontWeight: 500, cursor: 'pointer', flexShrink: 0,
                   }}
                 >
-                  Șterge
+                  {t('delete')}
                 </button>
               </div>
             ))}
@@ -289,10 +285,9 @@ export default function SchedulePage() {
         )}
       </section>
 
-      {/* ── Istoric ── */}
       {done.length > 0 && (
         <section style={{ background: 'var(--bg-card)', borderRadius: 10, border: '1px solid var(--border)', padding: 24 }}>
-          <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 16 }}>Istoric</h2>
+          <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)', marginBottom: 16 }}>{t('historyTitle')}</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {done.slice(0, 20).map(p => (
               <div key={p.sk} style={{
@@ -312,7 +307,7 @@ export default function SchedulePage() {
                   background: p.post_type === 'story' ? '#fdf4ff' : '#eff6ff',
                   color: p.post_type === 'story' ? '#7c3aed' : '#1d4ed8', fontWeight: 600,
                 }}>
-                  {p.post_type === 'story' ? 'Story' : 'Feed'}
+                  {p.post_type === 'story' ? t('story') : t('feed')}
                 </span>
                 <span style={{ fontSize: 13, color: 'var(--foreground-muted)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {p.caption}

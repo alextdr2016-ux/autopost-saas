@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect, useCallback } from 'react'
 import { fetchAuthSession } from 'aws-amplify/auth'
+import { useLanguage } from '../i18n/LanguageContext'
 
 const API_URL = import.meta.env.VITE_API_URL
 
@@ -1069,6 +1070,7 @@ function drawCanvas(
 
 
 export default function CreatorPage() {
+  const { t, lang } = useLanguage()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const isDragging = useRef(false)
@@ -1179,14 +1181,14 @@ export default function CreatorPage() {
         body: JSON.stringify({ queue, img_fit: imgFit, format }),
       })
       if (res.ok) {
-        setQueueMsg('Coada a fost salvată în cloud! Va fi folosită la postările automate.')
+        setQueueMsg(t('saveToCloud') + ' ✓')
         setTimeout(() => setQueueMsg(''), 4000)
       } else {
         const d = await res.json()
-        setError(d.error || 'Eroare la salvare')
+        setError(d.error || t('cloudSaveError'))
       }
     } catch {
-      setError('Eroare de conexiune la server.')
+      setError(t('serverConnectionError'))
     }
     setCloudSaving(false)
   }
@@ -1202,15 +1204,15 @@ export default function CreatorPage() {
           setQueue(data.queue)
           if (data.img_fit) setImgFit(data.img_fit)
           if (data.format) setFormat(data.format)
-          setQueueMsg(`Coada încărcată din cloud: ${data.queue.length} template-uri.`)
+          setQueueMsg(`${t('loadFromCloud')} ✓ (${data.queue.length})`)
           setTimeout(() => setQueueMsg(''), 3500)
         } else {
-          setQueueMsg('Nu există nicio coadă salvată în cloud.')
+          setQueueMsg(t('noTemplatesInQueue'))
           setTimeout(() => setQueueMsg(''), 3000)
         }
       }
     } catch {
-      setError('Eroare la încărcarea cozii din cloud.')
+      setError(t('cloudLoadError'))
     }
     setCloudLoading(false)
   }
@@ -1325,17 +1327,17 @@ export default function CreatorPage() {
           body: JSON.stringify({ scheduled_at, caption: postCaption, post_type: postType, image_base64: base64 })
         })
         if (res.ok) {
-          setSchedSuccess(`Programat pentru ${schedDate} la ${schedHour}!`)
+          setSchedSuccess(`${t('scheduledFor')} ${schedDate} ${t('at')} ${schedHour}!`)
           setShowSchedule(false)
           setTimeout(() => setSchedSuccess(''), 4000)
         } else {
           const data = await res.json()
-          setError(data.error || 'Eroare la programare')
+          setError(data.error || t('scheduleError'))
         }
         setScheduling(false)
       }
     } catch {
-      setError('Eroare de conexiune.')
+      setError(t('connectionError'))
       setScheduling(false)
     }
   }
@@ -1369,16 +1371,16 @@ export default function CreatorPage() {
           body: JSON.stringify({ image_base64: base64, caption: postCaption, post_type: postType })
         })
         if (res.ok) {
-          setSuccess(postType === 'story' ? 'Story publicat pe Facebook!' : 'Postare trimisă pe Facebook!')
+          setSuccess(postType === 'story' ? t('storyPosted') : t('feedPosted'))
           setTimeout(() => setSuccess(''), 4000)
         } else {
           const data = await res.json()
-          setError(data.error || 'Eroare la postare')
+          setError(data.error || t('postError'))
         }
         setPosting(false)
       }
     } catch {
-      setError('Eroare de conexiune.')
+      setError(t('connectionError'))
       setPosting(false)
     }
   }
@@ -1386,17 +1388,17 @@ export default function CreatorPage() {
   const canvasAspect = FORMATS[format].h / FORMATS[format].w
 
   const templateGroups = [
-    { label: 'Badge', ids: ['nou', 'promo', 'bestseller', 'freeship', 'minimal'] },
+    { label: t('badges'), ids: ['nou', 'promo', 'bestseller', 'freeship', 'minimal'] },
     { label: 'Premium', ids: ['luxury', 'editorial', 'collection', 'sale'] },
-    { label: 'Rame', ids: ['frame_gold', 'frame_minimal', 'frame_double', 'frame_black', 'frame_rose', 'frame_navy', 'frame_polaroid', 'frame_vintage', 'frame_film', 'frame_arch', 'frame_stripe', 'frame_corner', 'frame_shadow'] },
+    { label: t('frames'), ids: ['frame_gold', 'frame_minimal', 'frame_double', 'frame_black', 'frame_rose', 'frame_navy', 'frame_polaroid', 'frame_vintage', 'frame_film', 'frame_arch', 'frame_stripe', 'frame_corner', 'frame_shadow'] },
   ]
 
   return (
     <div style={{ padding: 32 }}>
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--foreground)' }}>Creator postări</h1>
+        <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--foreground)' }}>{t('creatorTitle')}</h1>
         <p style={{ color: 'var(--foreground-muted)', fontSize: 14, marginTop: 4 }}>
-          Creează imagini pentru postări și publică direct pe Facebook.
+          {t('creatorDesc')}
         </p>
       </div>
 
@@ -1408,8 +1410,8 @@ export default function CreatorPage() {
           {/* Left panel tab switcher */}
           <div style={{ display: 'flex', gap: 0, marginBottom: 18, borderBottom: '2px solid var(--border)' }}>
             {([
-              { key: 'editor', label: '⚙ Editor' },
-              { key: 'queue',  label: '📋 Coadă auto-post' },
+              { key: 'editor', label: `⚙ ${t('editorTab')}` },
+              { key: 'queue',  label: `📋 ${t('queueTab')}` },
             ] as const).map(tab => (
               <button key={tab.key} onClick={() => setLeftTab(tab.key)}
                 style={{
@@ -1430,11 +1432,11 @@ export default function CreatorPage() {
               {/* Summary bar */}
               <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 8, padding: '10px 12px', marginBottom: 14, fontSize: 12 }}>
                 <div style={{ fontWeight: 600, color: '#0369a1', marginBottom: 2 }}>
-                  {queue.length === 0 ? 'Coada este goală' : `${remainingQueuePosts} postări rămase din ${totalQueuePosts} total`}
+                  {queue.length === 0 ? t('queueEmpty') : `${remainingQueuePosts} ${t('postsRemaining')} ${totalQueuePosts} ${t('total')}`}
                 </div>
                 {nextQueueTemplate && (
                   <div style={{ color: '#0369a1', display: 'flex', alignItems: 'center', gap: 6 }}>
-                    Următor:&nbsp;
+                    {t('next')}&nbsp;
                     <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: 2, background: nextQueueTemplate.accentColor }} />
                     <strong>{nextQueueTemplate.label}</strong>
                   </div>
@@ -1451,7 +1453,7 @@ export default function CreatorPage() {
               {queue.length === 0 ? (
                 <div style={{ textAlign: 'center', color: 'var(--foreground-dim)', fontSize: 12, padding: '20px 0', border: '2px dashed var(--border)', borderRadius: 8, marginBottom: 14 }}>
                   <div style={{ fontSize: 28, marginBottom: 6 }}>📭</div>
-                  Nu ai template-uri în coadă.<br />Adaugă mai jos.
+                  {t('noTemplatesInQueue')}<br />{t('addBelow')}
                 </div>
               ) : (
                 <div style={{ marginBottom: 14 }}>
@@ -1500,15 +1502,15 @@ export default function CreatorPage() {
 
               {/* Add to queue */}
               <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, padding: '12px', marginBottom: 12 }}>
-                <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--foreground)', marginBottom: 8 }}>Adaugă în coadă</div>
+                <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--foreground)', marginBottom: 8 }}>{t('addToQueue')}</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
                   <div style={{ width: 10, height: 10, borderRadius: 2, background: selectedTemplate.accentColor, flexShrink: 0 }} />
                   <span style={{ flex: 1, fontSize: 11, fontWeight: 600, color: 'var(--foreground)' }}>
-                    {selectedTemplate.label} <span style={{ fontWeight: 400, color: 'var(--foreground-dim)' }}>(selectat în editor)</span>
+                    {selectedTemplate.label} <span style={{ fontWeight: 400, color: 'var(--foreground-dim)' }}>{t('selectedInEditor')}</span>
                   </span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <label style={{ fontSize: 11, color: 'var(--foreground-muted)', whiteSpace: 'nowrap' }}>Număr postări:</label>
+                  <label style={{ fontSize: 11, color: 'var(--foreground-muted)', whiteSpace: 'nowrap' }}>{t('numberOfPosts')}</label>
                   <input
                     type="number" min={1} max={999} value={queueAddCount}
                     onChange={e => setQueueAddCount(Math.max(1, parseInt(e.target.value) || 1))}
@@ -1516,11 +1518,11 @@ export default function CreatorPage() {
                   />
                   <button onClick={addToQueue}
                     style={{ flex: 1, padding: '6px', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
-                    + Adaugă
+                    + {t('add')}
                   </button>
                 </div>
                 <div style={{ fontSize: 10, color: 'var(--foreground-dim)', marginTop: 6 }}>
-                  Selectează alt template în Editor pentru a adăuga tipuri diferite.
+                  {t('selectOtherTemplate')}
                 </div>
               </div>
 
@@ -1533,7 +1535,7 @@ export default function CreatorPage() {
                       border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600,
                       cursor: cloudSaving ? 'not-allowed' : 'pointer',
                     }}>
-                    {cloudSaving ? 'Se salvează...' : '☁ Salvează în cloud (auto-post)'}
+                    {cloudSaving ? t('savingCloud') : `☁ ${t('saveToCloud')}`}
                   </button>
                 </div>
               )}
@@ -1544,7 +1546,7 @@ export default function CreatorPage() {
                   border: '1px solid var(--border)', borderRadius: 7, fontSize: 12, fontWeight: 500,
                   cursor: cloudLoading ? 'not-allowed' : 'pointer', marginBottom: 10,
                 }}>
-                {cloudLoading ? 'Se încarcă...' : '⬇ Încarcă din cloud'}
+                {cloudLoading ? t('loadingCloud') : `⬇ ${t('loadFromCloud')}`}
               </button>
 
               {/* Reset + clear */}
@@ -1552,21 +1554,21 @@ export default function CreatorPage() {
                 <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
                   <button onClick={resetQueueUsed}
                     style={{ flex: 1, padding: '7px', background: 'var(--bg-card)', color: 'var(--foreground)', border: '1px solid var(--border)', borderRadius: 7, fontSize: 11, cursor: 'pointer' }}>
-                    🔄 Resetează contori
+                    🔄 {t('resetCounters')}
                   </button>
                   <button onClick={() => { setQueue([]); setQueueMsg('') }}
                     style={{ padding: '7px 10px', background: '#fff5f5', color: '#ef4444', border: '1px solid #fecaca', borderRadius: 7, fontSize: 11, cursor: 'pointer' }}>
-                    🗑 Golește
+                    🗑 {t('clearQueue')}
                   </button>
                 </div>
               )}
 
               {/* Note about auto-posting */}
               <div style={{ marginTop: 6, padding: '10px 12px', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, fontSize: 11, color: '#92400e', lineHeight: 1.5 }}>
-                <strong>ℹ Cum funcționează:</strong><br />
-                1. Adaugă template-uri cu număr de postări<br />
-                2. Apasă <strong>☁ Salvează în cloud</strong><br />
-                3. Auto-posterul va folosi template-urile din coadă în ordine la fiecare postare automată, cu setarea {imgFit === 'contain' ? 'Fit (produs complet)' : 'Fill (umple rama)'}
+                <strong>ℹ {t('howItWorks')}</strong><br />
+                {t('queueInfo1')}<br />
+                {t('queueInfo2')}<br />
+                3. {imgFit === 'contain' ? t('queueInfo3Fit') : t('queueInfo3Fill')}
               </div>
             </div>
           )}
@@ -1606,7 +1608,7 @@ export default function CreatorPage() {
             {/* ── 1. Template & Format ── */}
             <div style={sectionStyle('template')}>
               <button onClick={() => toggleSection('template')} style={headerStyle('template')}>
-                <span>{chevron('template')} Template & Format</span>
+                <span>{chevron('template')} {t('templateAndFormat')}</span>
                 <span style={{ fontSize: 10, fontWeight: 400, color: 'var(--foreground-dim)' }}>{selectedTemplate.label} · {FORMATS[format].label}</span>
               </button>
               {openSections.has('template') && <div style={bodyStyle}>
@@ -1654,8 +1656,8 @@ export default function CreatorPage() {
             {/* ── 2. Imagine ── */}
             <div style={sectionStyle('image')}>
               <button onClick={() => toggleSection('image')} style={headerStyle('image')}>
-                <span>{chevron('image')} Imagine</span>
-                <span style={{ fontSize: 10, fontWeight: 400, color: 'var(--foreground-dim)' }}>{productImage ? '✓ încărcată' : 'nicio poză'}</span>
+                <span>{chevron('image')} {t('image')}</span>
+                <span style={{ fontSize: 10, fontWeight: 400, color: 'var(--foreground-dim)' }}>{productImage ? (lang === 'ro' ? '✓ incarcata' : '✓ loaded') : (lang === 'ro' ? 'nicio poza' : 'no image')}</span>
               </button>
               {openSections.has('image') && <div style={bodyStyle}>
                 <div
@@ -1669,7 +1671,7 @@ export default function CreatorPage() {
                   {productImagePreview ? (
                     <img src={productImagePreview} style={{ maxHeight: 60, maxWidth: '100%', borderRadius: 6, objectFit: 'contain' }} />
                   ) : (
-                    <div style={{ color: 'var(--foreground-dim)', fontSize: 11 }}>Click sau trage o poză</div>
+                    <div style={{ color: 'var(--foreground-dim)', fontSize: 11 }}>{t('dragPhotoOrClick')}</div>
                   )}
                 </div>
                 <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }}
@@ -1787,7 +1789,7 @@ export default function CreatorPage() {
                     <input type="checkbox" checked={showBadgeOnFrame}
                       onChange={e => setShowBadgeOnFrame(e.target.checked)}
                       style={{ accentColor: customBadgeBg, width: 16, height: 16, cursor: 'pointer' }} />
-                    <span>Adaugă badge peste ramă</span>
+                    <span>{t('addBadgeOnFrame')}</span>
                   </label>
                 )}
               </div>}
@@ -1796,7 +1798,7 @@ export default function CreatorPage() {
             {/* ── 4. Stil text ── */}
             <div style={sectionStyle('style')}>
               <button onClick={() => toggleSection('style')} style={headerStyle('style')}>
-                <span>{chevron('style')} Stil text</span>
+                <span>{chevron('style')} {lang === 'ro' ? 'Stil text' : 'Text style'}</span>
                 <span style={{ fontSize: 10, fontWeight: 400, color: 'var(--foreground-dim)' }}>{fontSize}px · {Math.round(overlayOpacity * 100)}%</span>
               </button>
               {openSections.has('style') && <div style={bodyStyle}>
@@ -1848,35 +1850,35 @@ export default function CreatorPage() {
             {/* ── 5. Conținut ── */}
             <div style={sectionStyle('content')}>
               <button onClick={() => toggleSection('content')} style={headerStyle('content')}>
-                <span>{chevron('content')} Conținut</span>
+                <span>{chevron('content')} {lang === 'ro' ? 'Continut' : 'Content'}</span>
               </button>
               {openSections.has('content') && <div style={bodyStyle}>
                 <div style={{ marginBottom: 8 }}>
-                  <label style={{ display: 'block', fontSize: 10, fontWeight: 500, color: 'var(--foreground-muted)', marginBottom: 2 }}>Numele produsului</label>
+                  <label style={{ display: 'block', fontSize: 10, fontWeight: 500, color: 'var(--foreground-muted)', marginBottom: 2 }}>{lang === 'ro' ? 'Numele produsului' : 'Product name'}</label>
                   <input value={productName} onChange={e => setProductName(e.target.value)}
-                    placeholder="ex: Rochie de vară florală"
+                    placeholder={lang === 'ro' ? 'ex: Rochie de vara florala' : 'e.g.: Summer floral dress'}
                     style={{ width: '100%', padding: '7px 8px', border: '1px solid var(--border)', borderRadius: 6, fontSize: 12, outline: 'none', boxSizing: 'border-box' }} />
                 </div>
                 <div style={{ marginBottom: 8 }}>
-                  <label style={{ display: 'block', fontSize: 10, fontWeight: 500, color: 'var(--foreground-muted)', marginBottom: 2 }}>Preț</label>
+                  <label style={{ display: 'block', fontSize: 10, fontWeight: 500, color: 'var(--foreground-muted)', marginBottom: 2 }}>{lang === 'ro' ? 'Pret' : 'Price'}</label>
                   <input value={productPrice} onChange={e => setProductPrice(e.target.value)}
-                    placeholder="ex: 149 RON"
+                    placeholder={lang === 'ro' ? 'ex: 149 RON' : 'e.g.: $49.99'}
                     style={{ width: '100%', padding: '7px 8px', border: '1px solid var(--border)', borderRadius: 6, fontSize: 12, outline: 'none', boxSizing: 'border-box' }} />
                 </div>
                 <div style={{ marginBottom: 8 }}>
                   <label style={{ display: 'block', fontSize: 10, fontWeight: 500, color: 'var(--foreground-muted)', marginBottom: 2 }}>
-                    Text pe imagine <span style={{ fontWeight: 400, color: 'var(--foreground-dim)' }}>(opțional)</span>
+                    {lang === 'ro' ? 'Text pe imagine' : 'Image text'} <span style={{ fontWeight: 400, color: 'var(--foreground-dim)' }}>{t('optional')}</span>
                   </label>
                   <input value={promoText} onChange={e => setPromoText(e.target.value)}
-                    placeholder="ex: Livrare gratuită azi!"
+                    placeholder={lang === 'ro' ? 'ex: Livrare gratuita azi!' : 'e.g.: Free shipping today!'}
                     style={{ width: '100%', padding: '7px 8px', border: '1px solid var(--border)', borderRadius: 6, fontSize: 12, outline: 'none', boxSizing: 'border-box' }} />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: 10, fontWeight: 500, color: 'var(--foreground-muted)', marginBottom: 2 }}>
-                    Caption Facebook <span style={{ fontWeight: 400, color: 'var(--foreground-dim)' }}>(opțional)</span>
+                    {t('captionFb')} <span style={{ fontWeight: 400, color: 'var(--foreground-dim)' }}>{t('optional')}</span>
                   </label>
                   <textarea value={caption} onChange={e => setCaption(e.target.value)}
-                    placeholder="Textul postării de pe Facebook..."
+                    placeholder={lang === 'ro' ? 'Textul postarii de pe Facebook...' : 'Facebook post text...'}
                     rows={2}
                     style={{ width: '100%', padding: '7px 8px', border: '1px solid var(--border)', borderRadius: 6, fontSize: 12, outline: 'none', boxSizing: 'border-box', resize: 'vertical', fontFamily: 'inherit' }} />
                 </div>
@@ -1902,11 +1904,11 @@ export default function CreatorPage() {
           <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
             <button onClick={postToFacebook} disabled={posting}
               style={{ flex: 1, padding: '10px', background: posting ? '#93c5fd' : '#1877f2', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: posting ? 'not-allowed' : 'pointer' }}>
-              {posting ? 'Se postează...' : format === 'stories' ? '📤 Publică Story' : '📤 Postează pe Feed'}
+              {posting ? t('postingNow') : format === 'stories' ? `📤 ${t('publishStory')}` : `📤 ${t('postToFeed')}`}
             </button>
             <button onClick={() => setShowSchedule(true)}
               style={{ padding: '10px 14px', background: 'var(--bg-card)', color: 'var(--foreground)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
-              title="Programează postarea">
+              title={t('schedulePostBtn')}>
               🗓
             </button>
             <button onClick={downloadImage}
@@ -1928,14 +1930,14 @@ export default function CreatorPage() {
               display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
             }}>
               <div style={{ background: 'var(--bg-card)', borderRadius: 12, padding: 28, width: 340, boxShadow: '0 20px 60px rgba(0,0,0,0.2)', border: '1px solid var(--border)' }}>
-                <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--foreground)', marginBottom: 4 }}>Programează postarea</div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--foreground)', marginBottom: 4 }}>{t('schedulePostTitle')}</div>
                 <div style={{ fontSize: 13, color: 'var(--foreground-muted)', marginBottom: 20 }}>
-                  {format === 'stories' ? 'Story' : 'Feed'} • imaginea curentă din Creator
+                  {format === 'stories' ? t('story') : t('feed')} • {t('scheduleCurrentImage')}
                 </div>
 
                 <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
                   <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--foreground)', marginBottom: 4 }}>Data</label>
+                    <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--foreground)', marginBottom: 4 }}>{t('dateLabel')}</label>
                     <input
                       type="date"
                       value={schedDate}
@@ -1945,7 +1947,7 @@ export default function CreatorPage() {
                     />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--foreground)', marginBottom: 4 }}>Ora</label>
+                    <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--foreground)', marginBottom: 4 }}>{t('hourLabel')}</label>
                     <select
                       value={schedHour}
                       onChange={e => setSchedHour(e.target.value)}
@@ -1961,14 +1963,14 @@ export default function CreatorPage() {
                     onClick={() => setShowSchedule(false)}
                     style={{ flex: 1, padding: '10px', background: 'var(--surface)', color: 'var(--foreground)', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
                   >
-                    Anulează
+                    {t('cancel')}
                   </button>
                   <button
                     onClick={schedulePost}
                     disabled={scheduling}
                     style={{ flex: 2, padding: '10px', background: scheduling ? '#93c5fd' : '#3b82f6', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: scheduling ? 'not-allowed' : 'pointer' }}
                   >
-                    {scheduling ? 'Se programează...' : `Programează pentru ${schedHour}`}
+                    {scheduling ? t('scheduling') : `${t('schedulePost')} ${schedHour}`}
                   </button>
                 </div>
               </div>
@@ -1982,7 +1984,7 @@ export default function CreatorPage() {
         <div style={{ flex: 1, maxWidth: 440 }}>
           <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--foreground)', marginBottom: 8 }}>
             Preview — {FORMATS[format].w}×{FORMATS[format].h}px
-            {productImage && <span style={{ fontWeight: 400, color: 'var(--foreground-dim)', marginLeft: 8 }}>Trage pentru a repoziționa</span>}
+            {productImage && <span style={{ fontWeight: 400, color: 'var(--foreground-dim)', marginLeft: 8 }}>{t('dragToReposition')}</span>}
           </label>
           <div style={{
             border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden',
