@@ -376,6 +376,46 @@ const LANDING_CSS = `
   font-size: 14px;
 }
 
+/* Language switcher */
+.lp .lp-lang-switch {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  backdrop-filter: var(--glass-blur);
+}
+.lp .lp-lang-btn {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+  transition: all var(--transition-fast);
+}
+.lp .lp-lang-btn:hover { color: var(--text-primary); }
+.lp .lp-lang-btn.active {
+  color: #fff;
+  background: var(--blue-accent);
+  box-shadow: 0 2px 10px rgba(37, 99, 235, 0.35);
+}
+@media (max-width: 640px) {
+  .lp .lp-lang-switch:not(.lp-lang-switch-mobile) { display: none; }
+}
+.lp .lp-lang-switch-mobile {
+  display: none;
+  align-self: flex-start;
+  margin-top: 8px;
+}
+@media (max-width: 640px) {
+  .lp .lp-lang-switch-mobile { display: inline-flex; }
+}
+
 /* Mobile menu toggle */
 .lp .menu-toggle {
   display: none;
@@ -1591,7 +1631,7 @@ const LANDING_CSS = `
 `
 
 export default function LandingPage({ onLogin }: { onLogin: () => void }) {
-  const { t } = useLanguage()
+  const { t, lang, setLang } = useLanguage()
   const [showAuth, setShowAuth] = useState(false)
   const [authMode, setAuthMode] = useState<AuthMode>('login')
   const [email, setEmail] = useState('')
@@ -1797,6 +1837,25 @@ export default function LandingPage({ onLogin }: { onLogin: () => void }) {
 
             {/* Actions */}
             <div className="navbar-actions">
+              {/* Language switcher */}
+              <div className="lp-lang-switch" role="group" aria-label={t('language')}>
+                <button
+                  type="button"
+                  className={`lp-lang-btn${lang === 'en' ? ' active' : ''}`}
+                  onClick={() => setLang('en')}
+                  aria-pressed={lang === 'en'}
+                >
+                  EN
+                </button>
+                <button
+                  type="button"
+                  className={`lp-lang-btn${lang === 'ro' ? ' active' : ''}`}
+                  onClick={() => setLang('ro')}
+                  aria-pressed={lang === 'ro'}
+                >
+                  RO
+                </button>
+              </div>
               <button
                 ref={authBtnRef}
                 className="btn btn-primary navbar-cta"
@@ -1914,6 +1973,24 @@ export default function LandingPage({ onLogin }: { onLogin: () => void }) {
         <a href="#how-it-works" onClick={e => { smoothScroll(e, '#how-it-works'); setMobileMenuOpen(false) }}>{t('lpHowItWorks')}</a>
         <a href="#pricing" onClick={e => { smoothScroll(e, '#pricing'); setMobileMenuOpen(false) }}>{t('lpPricing')}</a>
         <a href="#" onClick={e => { e.preventDefault(); setMobileMenuOpen(false); setShowAuth(true) }}>{t('lpAuth')}</a>
+        <div className="lp-lang-switch lp-lang-switch-mobile" role="group" aria-label={t('language')}>
+          <button
+            type="button"
+            className={`lp-lang-btn${lang === 'en' ? ' active' : ''}`}
+            onClick={() => setLang('en')}
+            aria-pressed={lang === 'en'}
+          >
+            EN
+          </button>
+          <button
+            type="button"
+            className={`lp-lang-btn${lang === 'ro' ? ' active' : ''}`}
+            onClick={() => setLang('ro')}
+            aria-pressed={lang === 'ro'}
+          >
+            RO
+          </button>
+        </div>
       </nav>
 
       <main>
