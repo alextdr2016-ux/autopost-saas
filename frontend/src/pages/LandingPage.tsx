@@ -2328,7 +2328,7 @@ export default function LandingPage({ onLogin }: { onLogin: () => void }) {
                 <div className="pricing-plan-name">Starter</div>
                 <div className="pricing-price">
                   <span className="pricing-currency">&euro;</span>
-                  <span className="pricing-amount">29</span>
+                  <span className="pricing-amount">19</span>
                   <span className="pricing-period">{t('lpPerMonth')}</span>
                 </div>
                 <p className="pricing-desc">{t('lpStarterDesc')}</p>
@@ -2377,7 +2377,7 @@ export default function LandingPage({ onLogin }: { onLogin: () => void }) {
                 <div className="pricing-plan-name">Pro</div>
                 <div className="pricing-price">
                   <span className="pricing-currency">&euro;</span>
-                  <span className="pricing-amount">79</span>
+                  <span className="pricing-amount">49</span>
                   <span className="pricing-period">{t('lpPerMonth')}</span>
                 </div>
                 <p className="pricing-desc">{t('lpProDesc')}</p>
