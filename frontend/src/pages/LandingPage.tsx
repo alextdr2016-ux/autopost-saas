@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { signIn, signUp, confirmSignUp } from 'aws-amplify/auth'
+import { useLanguage } from '../i18n/LanguageContext'
 
 type AuthMode = 'login' | 'signup' | 'confirm'
 
@@ -1590,6 +1591,7 @@ const LANDING_CSS = `
 `
 
 export default function LandingPage({ onLogin }: { onLogin: () => void }) {
+  const { t } = useLanguage()
   const [showAuth, setShowAuth] = useState(false)
   const [authMode, setAuthMode] = useState<AuthMode>('login')
   const [email, setEmail] = useState('')
@@ -1716,7 +1718,7 @@ export default function LandingPage({ onLogin }: { onLogin: () => void }) {
       }
     } catch (err: unknown) {
       const ex = err as { message?: string }
-      setError(ex.message || 'Eroare la autentificare')
+      setError(ex.message || t('lpAuthError'))
     } finally {
       setLoading(false)
     }
@@ -1735,7 +1737,7 @@ export default function LandingPage({ onLogin }: { onLogin: () => void }) {
       setAuthMode('confirm')
     } catch (err: unknown) {
       const ex = err as { message?: string }
-      setError(ex.message || 'Eroare la inregistrare')
+      setError(ex.message || t('lpSignupError'))
     } finally {
       setLoading(false)
     }
@@ -1747,13 +1749,13 @@ export default function LandingPage({ onLogin }: { onLogin: () => void }) {
     setError('')
     try {
       await confirmSignUp({ username: email, confirmationCode: code })
-      setSuccess('Cont verificat cu succes! Intra acum in cont.')
+      setSuccess(t('lpVerified'))
       setAuthMode('login')
       setCode('')
       setPassword('')
     } catch (err: unknown) {
       const ex = err as { message?: string }
-      setError(ex.message || 'Cod invalid')
+      setError(ex.message || t('lpInvalidCode'))
     } finally {
       setLoading(false)
     }
@@ -1773,9 +1775,9 @@ export default function LandingPage({ onLogin }: { onLogin: () => void }) {
       {/* ==================== NAVBAR ==================== */}
       <header className={`navbar${navScrolled ? ' scrolled' : ''}`} ref={navbarRef} role="banner">
         <div className="container">
-          <nav className="navbar-inner" aria-label="Navigare principala">
+          <nav className="navbar-inner" aria-label={t('lpMainNav')}>
             {/* Logo */}
-            <a className="navbar-logo" href="#" aria-label="AutoPost acasa" onClick={e => { e.preventDefault(); scrollToTop() }}>
+            <a className="navbar-logo" href="#" aria-label={t('lpAutoPostHome')} onClick={e => { e.preventDefault(); scrollToTop() }}>
               <div className="navbar-logo-icon" aria-hidden="true">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 2L2 7l10 5 10-5-10-5z" />
@@ -1788,9 +1790,9 @@ export default function LandingPage({ onLogin }: { onLogin: () => void }) {
 
             {/* Desktop nav */}
             <ul className="navbar-nav" role="list">
-              <li><a href="#features" onClick={e => smoothScroll(e, '#features')}>Functii</a></li>
-              <li><a href="#how-it-works" onClick={e => smoothScroll(e, '#how-it-works')}>Cum functioneaza</a></li>
-              <li><a href="#pricing" onClick={e => smoothScroll(e, '#pricing')}>Preturi</a></li>
+              <li><a href="#features" onClick={e => smoothScroll(e, '#features')}>{t('lpFeatures')}</a></li>
+              <li><a href="#how-it-works" onClick={e => smoothScroll(e, '#how-it-works')}>{t('lpHowItWorks')}</a></li>
+              <li><a href="#pricing" onClick={e => smoothScroll(e, '#pricing')}>{t('lpPricing')}</a></li>
             </ul>
 
             {/* Actions */}
@@ -1801,12 +1803,12 @@ export default function LandingPage({ onLogin }: { onLogin: () => void }) {
                 onClick={() => setShowAuth(v => !v)}
                 type="button"
               >
-                Autentificare
+                {t('lpAuth')}
               </button>
               <button
                 className={`menu-toggle${mobileMenuOpen ? ' active' : ''}`}
                 onClick={() => setMobileMenuOpen(v => !v)}
-                aria-label="Deschide meniu"
+                aria-label={t('lpOpenMenu')}
                 aria-expanded={mobileMenuOpen}
                 type="button"
               >
@@ -1821,9 +1823,9 @@ export default function LandingPage({ onLogin }: { onLogin: () => void }) {
                   <div className="auth-dropdown-overlay" onClick={() => setShowAuth(false)} />
                   <div className="auth-dropdown" ref={authRef}>
                     <h3>
-                      {authMode === 'login' && 'Intra in cont'}
-                      {authMode === 'signup' && 'Creaza cont nou'}
-                      {authMode === 'confirm' && 'Verificare email'}
+                      {authMode === 'login' && t('lpLoginTitle')}
+                      {authMode === 'signup' && t('lpSignupTitle')}
+                      {authMode === 'confirm' && t('lpConfirmTitle')}
                     </h3>
 
                     {success && <div className="auth-success">{success}</div>}
@@ -1832,10 +1834,10 @@ export default function LandingPage({ onLogin }: { onLogin: () => void }) {
                     {authMode === 'confirm' && (
                       <form onSubmit={handleConfirm}>
                         <p style={{ fontSize: 13, color: '#94A3B8', marginBottom: 16 }}>
-                          Am trimis un cod de verificare la <strong style={{ color: '#F1F5F9' }}>{email}</strong>. Verifica si inbox-ul si spam-ul.
+                          {t('lpVerifSent1')} <strong style={{ color: '#F1F5F9' }}>{email}</strong>{t('lpVerifSent2')}
                         </p>
                         <div style={{ marginBottom: 20 }}>
-                          <label>Cod verificare</label>
+                          <label>{t('lpVerifCode')}</label>
                           <input
                             type="text"
                             value={code}
@@ -1845,7 +1847,7 @@ export default function LandingPage({ onLogin }: { onLogin: () => void }) {
                           />
                         </div>
                         <button type="submit" disabled={loading} className="auth-submit-btn">
-                          {loading ? 'Se verifica...' : 'Verifica codul'}
+                          {loading ? t('lpVerifying') : t('lpVerifyCode')}
                         </button>
                       </form>
                     )}
@@ -1863,7 +1865,7 @@ export default function LandingPage({ onLogin }: { onLogin: () => void }) {
                         </div>
                         <div style={{ marginBottom: 20 }}>
                           <label>
-                            Parola {authMode === 'signup' && <span style={{ color: '#64748B', fontWeight: 400 }}>(min. 8 caractere)</span>}
+                            {t('lpPassword')} {authMode === 'signup' && <span style={{ color: '#64748B', fontWeight: 400 }}>{t('lpMinChars')}</span>}
                           </label>
                           <input
                             type="password"
@@ -1874,8 +1876,8 @@ export default function LandingPage({ onLogin }: { onLogin: () => void }) {
                         </div>
                         <button type="submit" disabled={loading} className="auth-submit-btn">
                           {loading
-                            ? (authMode === 'login' ? 'Se conecteaza...' : 'Se creaza contul...')
-                            : (authMode === 'login' ? 'Intra in cont' : 'Creaza cont')
+                            ? (authMode === 'login' ? t('lpLoggingIn') : t('lpCreatingAccount'))
+                            : (authMode === 'login' ? t('lpLoginTitle') : t('lpCreateAccount'))
                           }
                         </button>
                       </form>
@@ -1884,15 +1886,15 @@ export default function LandingPage({ onLogin }: { onLogin: () => void }) {
                     {authMode !== 'confirm' && (
                       <div className="auth-toggle">
                         {authMode === 'login' ? (
-                          <>Nu ai cont?{' '}
+                          <>{t('lpNoAccount')}{' '}
                             <button onClick={() => { setAuthMode('signup'); setError(''); setSuccess('') }} type="button">
-                              Inregistreaza-te gratuit
+                              {t('lpSignupFree')}
                             </button>
                           </>
                         ) : (
-                          <>Ai deja cont?{' '}
+                          <>{t('lpHaveAccount')}{' '}
                             <button onClick={() => { setAuthMode('login'); setError(''); setSuccess('') }} type="button">
-                              Intra in cont
+                              {t('lpLoginTitle')}
                             </button>
                           </>
                         )}
@@ -1907,16 +1909,16 @@ export default function LandingPage({ onLogin }: { onLogin: () => void }) {
       </header>
 
       {/* Mobile menu */}
-      <nav className={`mobile-menu${mobileMenuOpen ? ' open' : ''}`} aria-label="Meniu mobil">
-        <a href="#features" onClick={e => { smoothScroll(e, '#features'); setMobileMenuOpen(false) }}>Functii</a>
-        <a href="#how-it-works" onClick={e => { smoothScroll(e, '#how-it-works'); setMobileMenuOpen(false) }}>Cum functioneaza</a>
-        <a href="#pricing" onClick={e => { smoothScroll(e, '#pricing'); setMobileMenuOpen(false) }}>Preturi</a>
-        <a href="#" onClick={e => { e.preventDefault(); setMobileMenuOpen(false); setShowAuth(true) }}>Autentificare</a>
+      <nav className={`mobile-menu${mobileMenuOpen ? ' open' : ''}`} aria-label={t('lpMobileMenu')}>
+        <a href="#features" onClick={e => { smoothScroll(e, '#features'); setMobileMenuOpen(false) }}>{t('lpFeatures')}</a>
+        <a href="#how-it-works" onClick={e => { smoothScroll(e, '#how-it-works'); setMobileMenuOpen(false) }}>{t('lpHowItWorks')}</a>
+        <a href="#pricing" onClick={e => { smoothScroll(e, '#pricing'); setMobileMenuOpen(false) }}>{t('lpPricing')}</a>
+        <a href="#" onClick={e => { e.preventDefault(); setMobileMenuOpen(false); setShowAuth(true) }}>{t('lpAuth')}</a>
       </nav>
 
       <main>
         {/* ==================== HERO ==================== */}
-        <section className="hero" id="hero" aria-label="Sectiunea principala">
+        <section className="hero" id="hero" aria-label={t('lpHeroSection')}>
           <div className="hero-grid-overlay" aria-hidden="true"></div>
           <div className="container">
             <div className="hero-inner">
@@ -1927,18 +1929,18 @@ export default function LandingPage({ onLogin }: { onLogin: () => void }) {
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
                     </svg>
-                    Nou: Programare automata
+                    {t('lpBadge')}
                   </span>
                 </div>
 
                 <h1 className="hero-title">
-                  Posteaza automat pe<br />
+                  {t('lpHeroTitle1')}<br />
                   <span className="highlight">Facebook &amp; Instagram</span><br />
-                  din magazinul tau
+                  {t('lpHeroTitle2')}
                 </h1>
 
                 <p className="hero-subtitle">
-                  Conectezi Shopify sau WooCommerce, alegi un template, setezi orele — si AutoPost publica singur. Zero efort manual, engagement maxim.
+                  {t('lpHeroSubtitle')}
                 </p>
 
                 <div className="hero-actions">
@@ -1946,30 +1948,30 @@ export default function LandingPage({ onLogin }: { onLogin: () => void }) {
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <polygon points="5 3 19 12 5 21 5 3" />
                     </svg>
-                    Incepe Gratuit
+                    {t('lpStartFree')}
                   </a>
                   <a className="btn btn-secondary btn-lg" href="#how-it-works" onClick={e => smoothScroll(e, '#how-it-works')}>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <circle cx="12" cy="12" r="10" />
                       <polyline points="12 6 12 12 16 14" />
                     </svg>
-                    Vezi Demo
+                    {t('lpSeeDemo')}
                   </a>
                 </div>
 
-                <div className="hero-trust" aria-label="Utilizatori activi">
+                <div className="hero-trust" aria-label={t('lpActiveUsers')}>
                   <div className="hero-trust-dots" aria-hidden="true">
                     <div className="hero-trust-dot">A</div>
                     <div className="hero-trust-dot">M</div>
                     <div className="hero-trust-dot">R</div>
                     <div className="hero-trust-dot">+</div>
                   </div>
-                  <span>Folosit de <strong>50+ magazine</strong> din Romania</span>
+                  <span>{t('lpUsedBy')} <strong>{t('lpStoresFromRo')}</strong></span>
                 </div>
               </div>
 
               {/* Right: Mockup */}
-              <div className="hero-mockup" aria-label="Preview aplicatie" aria-hidden="true">
+              <div className="hero-mockup" aria-label={t('lpAppPreview')} aria-hidden="true">
                 <div className="mockup-window">
                   <div className="mockup-topbar">
                     <div className="mockup-dots">
@@ -1987,36 +1989,36 @@ export default function LandingPage({ onLogin }: { onLogin: () => void }) {
                   </div>
                   <div className="mockup-body">
                     <div className="mockup-header">
-                      <div className="mockup-title">Template-uri</div>
-                      <div className="mockup-btn-sm">+ Postare noua</div>
+                      <div className="mockup-title">{t('lpTemplates')}</div>
+                      <div className="mockup-btn-sm">{t('lpNewPost')}</div>
                     </div>
 
                     <div className="mockup-grid">
                       <div className="mockup-card">
                         <div className="mockup-card-img"></div>
                         <div className="mockup-card-info">
-                          <div className="mockup-card-label">Promotie</div>
+                          <div className="mockup-card-label">{t('lpPromotion')}</div>
                           <div className="mockup-card-name">Flash Sale</div>
                         </div>
                       </div>
                       <div className="mockup-card">
                         <div className="mockup-card-img"></div>
                         <div className="mockup-card-info">
-                          <div className="mockup-card-label">Produs</div>
+                          <div className="mockup-card-label">{t('lpProduct')}</div>
                           <div className="mockup-card-name">Product Spotlight</div>
                         </div>
                       </div>
                       <div className="mockup-card">
                         <div className="mockup-card-img"></div>
                         <div className="mockup-card-info">
-                          <div className="mockup-card-label">Sezon</div>
+                          <div className="mockup-card-label">{t('lpSeason')}</div>
                           <div className="mockup-card-name">Spring Sale</div>
                         </div>
                       </div>
                     </div>
 
                     <div className="mockup-schedule">
-                      <div className="mockup-schedule-label">Programare saptamanala</div>
+                      <div className="mockup-schedule-label">{t('lpWeeklySchedule')}</div>
                       <div className="mockup-schedule-items">
                         <div className="mockup-schedule-item">
                           <div className="mockup-schedule-time">09:00</div>
@@ -2049,10 +2051,10 @@ export default function LandingPage({ onLogin }: { onLogin: () => void }) {
         </section>
 
         {/* ==================== LOGOS BAR ==================== */}
-        <section className="logos-bar" aria-label="Platforme compatibile">
+        <section className="logos-bar" aria-label={t('lpCompatiblePlatforms')}>
           <div className="container">
             <div className="logos-bar-inner">
-              <p className="logos-bar-label">Functioneaza cu platformele tale preferate</p>
+              <p className="logos-bar-label">{t('lpWorksWithPlatforms')}</p>
               <ul className="logos-list animate-on-scroll" role="list">
                 <li>
                   <div className="logo-item">
@@ -2109,12 +2111,12 @@ export default function LandingPage({ onLogin }: { onLogin: () => void }) {
         </section>
 
         {/* ==================== FEATURES ==================== */}
-        <section className="features" id="features" aria-label="Functionalitati principale">
+        <section className="features" id="features" aria-label={t('lpMainFeatures')}>
           <div className="container">
             <header className="section-header">
-              <span className="section-label animate-on-scroll">Functionalitati</span>
-              <h2 className="section-title animate-on-scroll delay-1">Tot ce ai nevoie pentru<br />social media pe pilot automat</h2>
-              <p className="section-subtitle animate-on-scroll delay-2">De la crearea imaginilor pana la publicare — AutoPost gestioneaza tot procesul, tu te concentrezi pe vanzari.</p>
+              <span className="section-label animate-on-scroll">{t('lpFeaturesLabel')}</span>
+              <h2 className="section-title animate-on-scroll delay-1">{t('lpFeaturesTitle').split('\n')[0]}<br />{t('lpFeaturesTitle').split('\n')[1]}</h2>
+              <p className="section-subtitle animate-on-scroll delay-2">{t('lpFeaturesSubtitle')}</p>
             </header>
 
             <div className="features-grid">
@@ -2128,14 +2130,14 @@ export default function LandingPage({ onLogin }: { onLogin: () => void }) {
                     <polyline points="21 15 16 10 5 21" />
                   </svg>
                 </div>
-                <h3 className="feature-card-title">Creator de postari</h3>
+                <h3 className="feature-card-title">{t('lpPostCreator')}</h3>
                 <p className="feature-card-desc">
-                  22+ template-uri profesionale gata de folosit. Adaugi pozele produselor prin drag &amp; drop si ai postarea gata in 30 de secunde.
+                  {t('lpPostCreatorDesc')}
                 </p>
                 <ul className="feature-tags" role="list">
-                  <li><span className="feature-tag"><CheckSvg /> 22+ template-uri</span></li>
-                  <li><span className="feature-tag"><CheckSvg /> Drag &amp; drop</span></li>
-                  <li><span className="feature-tag"><CheckSvg /> Export JPEG/PNG</span></li>
+                  <li><span className="feature-tag"><CheckSvg /> {t('lpTag22Templates')}</span></li>
+                  <li><span className="feature-tag"><CheckSvg /> {t('lpTagDragDrop')}</span></li>
+                  <li><span className="feature-tag"><CheckSvg /> {t('lpTagExport')}</span></li>
                 </ul>
               </article>
 
@@ -2148,14 +2150,14 @@ export default function LandingPage({ onLogin }: { onLogin: () => void }) {
                     <polyline points="12 6 12 12 16 14" />
                   </svg>
                 </div>
-                <h3 className="feature-card-title">Programare automata</h3>
+                <h3 className="feature-card-title">{t('lpAutoScheduling')}</h3>
                 <p className="feature-card-desc">
-                  Setezi orele de postare o data si AutoPost publica conform programului, inclusiv in weekend. Fara sa stai la calculator.
+                  {t('lpAutoSchedulingDesc')}
                 </p>
                 <ul className="feature-tags" role="list">
-                  <li><span className="feature-tag"><CheckSvg /> Calendar vizual</span></li>
-                  <li><span className="feature-tag"><CheckSvg /> Ore multiple/zi</span></li>
-                  <li><span className="feature-tag"><CheckSvg /> Notificari status</span></li>
+                  <li><span className="feature-tag"><CheckSvg /> {t('lpTagVisualCalendar')}</span></li>
+                  <li><span className="feature-tag"><CheckSvg /> {t('lpTagMultipleTimes')}</span></li>
+                  <li><span className="feature-tag"><CheckSvg /> {t('lpTagStatusNotif')}</span></li>
                 </ul>
               </article>
 
@@ -2167,14 +2169,14 @@ export default function LandingPage({ onLogin }: { onLogin: () => void }) {
                     <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
                   </svg>
                 </div>
-                <h3 className="feature-card-title">Facebook &amp; Instagram</h3>
+                <h3 className="feature-card-title">{t('lpFbIgTitle')}</h3>
                 <p className="feature-card-desc">
-                  Publica simultan pe ambele platforme — feed, stories si reels. Un singur dashboard, toate conturile tale conectate.
+                  {t('lpFbIgDesc')}
                 </p>
                 <ul className="feature-tags" role="list">
-                  <li><span className="feature-tag"><CheckSvg /> Feed + Stories</span></li>
-                  <li><span className="feature-tag"><CheckSvg /> Multi-cont</span></li>
-                  <li><span className="feature-tag"><CheckSvg /> Analytics inclus</span></li>
+                  <li><span className="feature-tag"><CheckSvg /> {t('lpTagFeedStories')}</span></li>
+                  <li><span className="feature-tag"><CheckSvg /> {t('lpTagMultiAccount')}</span></li>
+                  <li><span className="feature-tag"><CheckSvg /> {t('lpTagAnalytics')}</span></li>
                 </ul>
               </article>
             </div>
@@ -2182,12 +2184,12 @@ export default function LandingPage({ onLogin }: { onLogin: () => void }) {
         </section>
 
         {/* ==================== HOW IT WORKS ==================== */}
-        <section className="how-it-works" id="how-it-works" aria-label="Cum functioneaza">
+        <section className="how-it-works" id="how-it-works" aria-label={t('lpHowItWorks')}>
           <div className="container">
             <header className="section-header">
-              <span className="section-label animate-on-scroll">Proces simplu</span>
-              <h2 className="section-title animate-on-scroll delay-1">3 pasi si magazinul tau<br />posteaza singur</h2>
-              <p className="section-subtitle animate-on-scroll delay-2">Configurezi o singura data in 10 minute, iar de acolo AutoPost ruleaza pe pilot automat, zi de zi.</p>
+              <span className="section-label animate-on-scroll">{t('lpSimpleProcess')}</span>
+              <h2 className="section-title animate-on-scroll delay-1">{t('lpStepsTitle').split('\n')[0]}<br />{t('lpStepsTitle').split('\n')[1]}</h2>
+              <p className="section-subtitle animate-on-scroll delay-2">{t('lpStepsSubtitle')}</p>
             </header>
 
             <div className="steps-container">
@@ -2202,9 +2204,9 @@ export default function LandingPage({ onLogin }: { onLogin: () => void }) {
                   <div className="step-number-inner">1</div>
                 </div>
                 <div>
-                  <h3 className="step-title">Conectezi magazinul</h3>
-                  <p className="step-desc">Integrare in cateva click-uri cu Shopify, WooCommerce sau orice platforma prin API. Produsele se importa automat.</p>
-                  <div className="step-platform-icons" aria-label="Platforme suportate">
+                  <h3 className="step-title">{t('lpStep1Title')}</h3>
+                  <p className="step-desc">{t('lpStep1Desc')}</p>
+                  <div className="step-platform-icons" aria-label={t('lpSupportedPlatforms')}>
                     <div className="step-platform-icon">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#96BF48" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                         <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" />
@@ -2230,23 +2232,23 @@ export default function LandingPage({ onLogin }: { onLogin: () => void }) {
                   <div className="step-number-inner">2</div>
                 </div>
                 <div>
-                  <h3 className="step-title">Alegi template si programezi</h3>
-                  <p className="step-desc">Selectezi un template din galerie, alegi produsele care sa apara si stabilesti orele saptamanale de publicare.</p>
-                  <div className="step-platform-icons" aria-label="Optiuni template">
+                  <h3 className="step-title">{t('lpStep2Title')}</h3>
+                  <p className="step-desc">{t('lpStep2Desc')}</p>
+                  <div className="step-platform-icons" aria-label={t('lpTemplateOptions')}>
                     <div className="step-platform-icon">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                         <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
                         <circle cx="8.5" cy="8.5" r="1.5" />
                         <polyline points="21 15 16 10 5 21" />
                       </svg>
-                      22+ template-uri
+                      {t('lpTag22Templates')}
                     </div>
                     <div className="step-platform-icon">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                         <circle cx="12" cy="12" r="10" />
                         <polyline points="12 6 12 12 16 14" />
                       </svg>
-                      Ore custom
+                      {t('lpCustomHours')}
                     </div>
                   </div>
                 </div>
@@ -2258,9 +2260,9 @@ export default function LandingPage({ onLogin }: { onLogin: () => void }) {
                   <div className="step-number-inner">3</div>
                 </div>
                 <div>
-                  <h3 className="step-title">AutoPost publica automat</h3>
-                  <p className="step-desc">La orele setate, AutoPost genereaza imaginea, adauga textul si publica pe Facebook si Instagram in mod automat.</p>
-                  <div className="step-platform-icons" aria-label="Retele sociale">
+                  <h3 className="step-title">{t('lpStep3Title')}</h3>
+                  <p className="step-desc">{t('lpStep3Desc')}</p>
+                  <div className="step-platform-icons" aria-label={t('lpSocialNetworks')}>
                     <div className="step-platform-icon">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1877F2" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                         <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
@@ -2283,41 +2285,41 @@ export default function LandingPage({ onLogin }: { onLogin: () => void }) {
         </section>
 
         {/* ==================== STATS BAR ==================== */}
-        <section className="stats-bar" aria-label="Statistici cheie">
+        <section className="stats-bar" aria-label={t('lpKeyStats')}>
           <div className="container">
             <div className="stats-grid">
               <div className="stat-item stat-divider animate-on-scroll">
                 <div className="stat-value">
                   <span className="stat-accent">22+</span>
                 </div>
-                <div className="stat-label">Template-uri</div>
-                <div className="stat-sublabel">Design-uri profesionale incluse</div>
+                <div className="stat-label">{t('lpStatTemplates')}</div>
+                <div className="stat-sublabel">{t('lpStatTemplatesSub')}</div>
               </div>
               <div className="stat-item stat-divider animate-on-scroll delay-2">
                 <div className="stat-value">
                   <span className="stat-accent">100%</span>
                 </div>
-                <div className="stat-label">Automat</div>
-                <div className="stat-sublabel">Zero interventie manuala</div>
+                <div className="stat-label">{t('lpStatAutomatic')}</div>
+                <div className="stat-sublabel">{t('lpStatAutomaticSub')}</div>
               </div>
               <div className="stat-item animate-on-scroll delay-3">
                 <div className="stat-value">
                   <span className="stat-accent">2</span>
                 </div>
                 <div className="stat-label">Facebook &amp; Instagram</div>
-                <div className="stat-sublabel">Ambele platforme simultan</div>
+                <div className="stat-sublabel">{t('lpStatPlatformsSub')}</div>
               </div>
             </div>
           </div>
         </section>
 
         {/* ==================== PRICING ==================== */}
-        <section className="pricing" id="pricing" aria-label="Planuri de preturi">
+        <section className="pricing" id="pricing" aria-label={t('lpPricingPlans')}>
           <div className="container">
             <header className="section-header">
-              <span className="section-label animate-on-scroll">Preturi</span>
-              <h2 className="section-title animate-on-scroll delay-1">Simplu si transparent</h2>
-              <p className="section-subtitle animate-on-scroll delay-2">Fara contracte pe termen lung. Poti anula oricand. 14 zile gratuit pe orice plan.</p>
+              <span className="section-label animate-on-scroll">{t('lpPricingLabel')}</span>
+              <h2 className="section-title animate-on-scroll delay-1">{t('lpPricingTitle')}</h2>
+              <p className="section-subtitle animate-on-scroll delay-2">{t('lpPricingSubtitle')}</p>
             </header>
 
             <div className="pricing-grid">
@@ -2327,107 +2329,107 @@ export default function LandingPage({ onLogin }: { onLogin: () => void }) {
                 <div className="pricing-price">
                   <span className="pricing-currency">&euro;</span>
                   <span className="pricing-amount">29</span>
-                  <span className="pricing-period">/luna</span>
+                  <span className="pricing-period">{t('lpPerMonth')}</span>
                 </div>
-                <p className="pricing-desc">Perfect pentru magazine la inceput de drum care vor sa automatizeze prezenta pe social media.</p>
+                <p className="pricing-desc">{t('lpStarterDesc')}</p>
 
                 <div className="pricing-separator" aria-hidden="true"></div>
 
                 <ul className="pricing-features" role="list">
                   <li className="pricing-feature">
                     <CheckSvg size={18} sw={2.5} />
-                    10 template-uri incluse
+                    {t('lpF10Templates')}
                   </li>
                   <li className="pricing-feature">
                     <CheckSvg size={18} sw={2.5} />
-                    1 cont Facebook + Instagram
+                    {t('lpF1Account')}
                   </li>
                   <li className="pricing-feature">
                     <CheckSvg size={18} sw={2.5} />
-                    30 postari/luna
+                    {t('lpF30Posts')}
                   </li>
                   <li className="pricing-feature">
                     <CheckSvg size={18} sw={2.5} />
-                    Programare automata
+                    {t('lpFAutoSchedule')}
                   </li>
                   <li className="pricing-feature">
                     <CheckSvg size={18} sw={2.5} />
-                    Shopify + WooCommerce
+                    {t('lpFShopifyWoo')}
                   </li>
-                  <li className="pricing-feature disabled" aria-label="Indisponibil in planul Starter">
+                  <li className="pricing-feature disabled" aria-label={t('lpUnavailableStarter')}>
                     <CheckSvg size={18} sw={2.5} />
-                    Analytics avansat
+                    {t('lpFAdvAnalytics')}
                   </li>
-                  <li className="pricing-feature disabled" aria-label="Indisponibil in planul Starter">
+                  <li className="pricing-feature disabled" aria-label={t('lpUnavailableStarter')}>
                     <CheckSvg size={18} sw={2.5} />
-                    Suport prioritar
+                    {t('lpFPrioritySupport')}
                   </li>
                 </ul>
 
                 <a className="btn btn-secondary pricing-cta" href="#" role="button" onClick={e => e.preventDefault()}>
-                  Incepe Trial Gratuit
+                  {t('lpStartTrial')}
                 </a>
               </article>
 
               {/* Pro (featured) */}
               <article className="pricing-card featured animate-on-scroll delay-2" tabIndex={0}>
-                <div className="pricing-badge" aria-label="Plan recomandat">Popular</div>
+                <div className="pricing-badge" aria-label={t('lpRecommended')}>{t('lpPopular')}</div>
                 <div className="pricing-plan-name">Pro</div>
                 <div className="pricing-price">
                   <span className="pricing-currency">&euro;</span>
                   <span className="pricing-amount">79</span>
-                  <span className="pricing-period">/luna</span>
+                  <span className="pricing-period">{t('lpPerMonth')}</span>
                 </div>
-                <p className="pricing-desc">Pentru magazine cu volum mare care au nevoie de tot arsenalul de automatizare si analytics.</p>
+                <p className="pricing-desc">{t('lpProDesc')}</p>
 
                 <div className="pricing-separator" aria-hidden="true"></div>
 
                 <ul className="pricing-features" role="list">
                   <li className="pricing-feature">
                     <CheckSvg size={18} sw={2.5} />
-                    Toate 22+ template-urile
+                    {t('lpFAllTemplates')}
                   </li>
                   <li className="pricing-feature">
                     <CheckSvg size={18} sw={2.5} />
-                    5 conturi Facebook + Instagram
+                    {t('lpF5Accounts')}
                   </li>
                   <li className="pricing-feature">
                     <CheckSvg size={18} sw={2.5} />
-                    Postari nelimitate
+                    {t('lpFUnlimitedPosts')}
                   </li>
                   <li className="pricing-feature">
                     <CheckSvg size={18} sw={2.5} />
-                    Programare avansata + Reels
+                    {t('lpFAdvScheduleReels')}
                   </li>
                   <li className="pricing-feature">
                     <CheckSvg size={18} sw={2.5} />
-                    Toate platformele + Extended CMS
+                    {t('lpFAllPlatforms')}
                   </li>
                   <li className="pricing-feature">
                     <CheckSvg size={18} sw={2.5} />
-                    Analytics avansat + Export
+                    {t('lpFAdvAnalyticsExport')}
                   </li>
                   <li className="pricing-feature">
                     <CheckSvg size={18} sw={2.5} />
-                    Suport prioritar 24/7
+                    {t('lpFPrioritySupport247')}
                   </li>
                 </ul>
 
                 <a className="btn btn-primary pricing-cta" href="#" role="button" onClick={e => e.preventDefault()}>
-                  Alege Pro — 14 zile gratuit
+                  {t('lpChoosePro')}
                 </a>
               </article>
             </div>
 
             {/* Pricing note */}
             <p style={{ textAlign: 'center', marginTop: 32, fontSize: 14, color: 'var(--text-muted)' }} className="animate-on-scroll">
-              Nu necesita card de credit pentru trial. Anulezi oricand, fara penalizari.
+              {t('lpPricingNote')}
             </p>
           </div>
         </section>
 
         {/* ==================== CTA FINAL ==================== */}
-        <section className="cta-final" aria-label="Call to action final">
+        <section className="cta-final" aria-label={t('lpCtaFinal')}>
           {/* Decorative circles */}
           <div className="cta-decor cta-decor-1" aria-hidden="true"></div>
           <div className="cta-decor cta-decor-2" aria-hidden="true"></div>
@@ -2436,20 +2438,20 @@ export default function LandingPage({ onLogin }: { onLogin: () => void }) {
           <div className="container">
             <div className="cta-final-inner">
               <h2 className="cta-final-title animate-on-scroll">
-                Gata sa lasi AutoPost<br />sa lucreze pentru tine?
+                {t('lpCtaTitle').split('\n')[0]}<br />{t('lpCtaTitle').split('\n')[1]}
               </h2>
               <p className="cta-final-subtitle animate-on-scroll delay-1">
-                Alatura-te celor 50+ magazine din Romania care posteaza automat pe Facebook si Instagram. Setup in 10 minute.
+                {t('lpCtaSubtitle')}
               </p>
               <div className="cta-final-actions animate-on-scroll delay-2">
                 <a className="btn btn-white btn-lg" href="#pricing" onClick={e => smoothScroll(e, '#pricing')}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <polygon points="5 3 19 12 5 21 5 3" />
                   </svg>
-                  Incepe Gratuit Acum
+                  {t('lpStartFreeNow')}
                 </a>
               </div>
-              <p className="cta-final-note animate-on-scroll delay-3">14 zile gratuit &middot; Fara card de credit &middot; Anulezi oricand</p>
+              <p className="cta-final-note animate-on-scroll delay-3">{t('lpCtaNote')}</p>
             </div>
           </div>
         </section>
@@ -2461,7 +2463,7 @@ export default function LandingPage({ onLogin }: { onLogin: () => void }) {
           <div className="footer-inner">
             {/* Brand */}
             <div className="footer-brand">
-              <a className="navbar-logo" href="#" aria-label="AutoPost acasa" onClick={e => { e.preventDefault(); scrollToTop() }}>
+              <a className="navbar-logo" href="#" aria-label={t('lpAutoPostHome')} onClick={e => { e.preventDefault(); scrollToTop() }}>
                 <div className="navbar-logo-icon" aria-hidden="true">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 2L2 7l10 5 10-5-10-5z" />
@@ -2472,9 +2474,9 @@ export default function LandingPage({ onLogin }: { onLogin: () => void }) {
                 <span className="navbar-logo-text">Auto<span>Post</span></span>
               </a>
               <p className="footer-brand-desc">
-                Platforma de postare automata pe Facebook &amp; Instagram pentru magazine online din Romania.
+                {t('lpFooterDesc')}
               </p>
-              <div className="footer-social" aria-label="Retele sociale">
+              <div className="footer-social" aria-label={t('lpFooterSocial')}>
                 <a className="footer-social-link" href="#" aria-label="Facebook AutoPost" onClick={e => e.preventDefault()}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
@@ -2498,37 +2500,37 @@ export default function LandingPage({ onLogin }: { onLogin: () => void }) {
             </div>
 
             {/* Produs */}
-            <nav aria-label="Linkuri produs">
-              <p className="footer-col-title">Produs</p>
+            <nav aria-label={t('lpFooterProductLinks')}>
+              <p className="footer-col-title">{t('lpFooterProduct')}</p>
               <ul className="footer-links" role="list">
-                <li><a href="#features" onClick={e => smoothScroll(e, '#features')}>Functionalitati</a></li>
-                <li><a href="#pricing" onClick={e => smoothScroll(e, '#pricing')}>Preturi</a></li>
-                <li><a href="#how-it-works" onClick={e => smoothScroll(e, '#how-it-works')}>Cum functioneaza</a></li>
+                <li><a href="#features" onClick={e => smoothScroll(e, '#features')}>{t('lpFooterFeatures')}</a></li>
+                <li><a href="#pricing" onClick={e => smoothScroll(e, '#pricing')}>{t('lpPricing')}</a></li>
+                <li><a href="#how-it-works" onClick={e => smoothScroll(e, '#how-it-works')}>{t('lpFooterHowItWorks')}</a></li>
                 <li><a href="#">Changelog</a></li>
                 <li><a href="#">Roadmap</a></li>
               </ul>
             </nav>
 
             {/* Resurse */}
-            <nav aria-label="Linkuri resurse">
-              <p className="footer-col-title">Resurse</p>
+            <nav aria-label={t('lpFooterResourceLinks')}>
+              <p className="footer-col-title">{t('lpFooterResources')}</p>
               <ul className="footer-links" role="list">
-                <li><a href="#">Documentatie</a></li>
+                <li><a href="#">{t('lpFooterDocs')}</a></li>
                 <li><a href="#">API Reference</a></li>
                 <li><a href="#">Blog</a></li>
-                <li><a href="#">Tutoriale</a></li>
+                <li><a href="#">{t('lpFooterTutorials')}</a></li>
                 <li><a href="#">Status</a></li>
               </ul>
             </nav>
 
             {/* Companie */}
-            <nav aria-label="Linkuri companie">
-              <p className="footer-col-title">Companie</p>
+            <nav aria-label={t('lpFooterCompanyLinks')}>
+              <p className="footer-col-title">{t('lpFooterCompany')}</p>
               <ul className="footer-links" role="list">
-                <li><a href="#">Despre noi</a></li>
+                <li><a href="#">{t('lpFooterAbout')}</a></li>
                 <li><a href="#">Contact</a></li>
-                <li><a href="#">Termeni si conditii</a></li>
-                <li><a href="#">Politica de confidentialitate</a></li>
+                <li><a href="#">{t('lpFooterTerms')}</a></li>
+                <li><a href="#">{t('lpFooterPrivacy')}</a></li>
                 <li><a href="#">GDPR</a></li>
               </ul>
             </nav>
@@ -2536,11 +2538,11 @@ export default function LandingPage({ onLogin }: { onLogin: () => void }) {
 
           <div className="footer-bottom">
             <p className="footer-copyright">
-              &copy; 2026 AutoPost. Toate drepturile rezervate.
+              {t('lpFooterCopyright')}
             </p>
-            <nav className="footer-bottom-links" aria-label="Linkuri legale">
-              <a href="#">Termeni</a>
-              <a href="#">Confidentialitate</a>
+            <nav className="footer-bottom-links" aria-label={t('lpFooterLegal')}>
+              <a href="#">{t('lpFooterTermsShort')}</a>
+              <a href="#">{t('lpFooterPrivacyShort')}</a>
               <a href="#">Cookies</a>
             </nav>
           </div>
@@ -2550,7 +2552,7 @@ export default function LandingPage({ onLogin }: { onLogin: () => void }) {
       {/* Scroll to top button */}
       <button
         className={`scroll-top${scrollTopVisible ? ' visible' : ''}`}
-        aria-label="Inapoi la inceput"
+        aria-label={t('lpBackToTop')}
         onClick={scrollToTop}
         type="button"
       >
