@@ -23,6 +23,12 @@ function AppInner() {
   const [page, setPage] = useState<Page>('dashboard')
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
   const [fbConnected, setFbConnected] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  const handleNavigate = useCallback((p: Page) => {
+    setPage(p)
+    setMobileMenuOpen(false)
+  }, [])
 
   useEffect(() => {
     fetchAuthSession()
@@ -65,13 +71,6 @@ function AppInner() {
       </div>
     )
   }
-
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-
-  const handleNavigate = useCallback((p: Page) => {
-    setPage(p)
-    setMobileMenuOpen(false)
-  }, [])
 
   if (!loggedIn) {
     return <LandingPage onLogin={() => setLoggedIn(true)} />
