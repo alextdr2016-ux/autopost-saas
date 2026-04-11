@@ -110,7 +110,7 @@ export default function SchedulePage() {
   const done = posts.filter(p => p.status !== 'pending').sort((a, b) => b.scheduled_at.localeCompare(a.scheduled_at))
 
   return (
-    <div style={{ padding: 32, maxWidth: 700 }}>
+    <div className="page-wrapper" style={{ maxWidth: 700, width: '100%' }}>
       <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--foreground)', marginBottom: 6 }}>{t('scheduleTitle')}</h1>
       <p style={{ color: 'var(--foreground-muted)', fontSize: 14, marginBottom: 28 }}>
         {t('scheduleDesc')}

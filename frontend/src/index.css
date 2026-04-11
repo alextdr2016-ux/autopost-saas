@@ -102,3 +102,137 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
+
+/* ===== RESPONSIVE / MOBILE ===== */
+
+/* Mobile header bar */
+.mobile-header {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 56px;
+  background: var(--bg-base);
+  border-bottom: 1px solid var(--border);
+  padding: 0 16px;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 50;
+}
+.mobile-header-logo {
+  display: flex; align-items: center; gap: 8px;
+  font-weight: 700; font-size: 15px; color: var(--foreground);
+}
+.mobile-header-logo-icon {
+  width: 32px; height: 32px;
+  background: var(--accent);
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+}
+.hamburger-btn {
+  display: flex; flex-direction: column; gap: 5px;
+  padding: 8px; cursor: pointer;
+  background: none; border: none;
+}
+.hamburger-btn span {
+  display: block; width: 22px; height: 2px;
+  background: var(--foreground); border-radius: 2px;
+  transition: all 200ms ease;
+}
+
+/* Sidebar overlay on mobile */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 90;
+}
+
+/* Desktop sidebar */
+.app-sidebar {
+  width: 260px;
+  background: var(--bg-base);
+  border-right: 1px solid var(--border);
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 100;
+  transition: transform 300ms ease;
+}
+
+/* Main content area */
+.app-main {
+  flex: 1;
+  margin-left: 260px;
+  overflow: auto;
+}
+
+/* Page wrapper (used in all pages) */
+.page-wrapper {
+  padding: 32px;
+}
+
+/* Responsive grids */
+.stats-grid-responsive {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+.dashboard-grid-responsive {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 24px;
+}
+
+@media (max-width: 768px) {
+  /* Show mobile header */
+  .mobile-header { display: flex; }
+
+  /* Sidebar: hidden by default, slide in from left */
+  .app-sidebar {
+    transform: translateX(-100%);
+  }
+  .app-sidebar.open {
+    transform: translateX(0);
+  }
+  .sidebar-overlay.open { display: block; }
+
+  /* Main content: no margin, add top padding for mobile header */
+  .app-main {
+    margin-left: 0;
+    padding-top: 56px;
+  }
+
+  /* Page padding */
+  .page-wrapper {
+    padding: 16px;
+  }
+
+  /* Responsive grids */
+  .stats-grid-responsive {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .dashboard-grid-responsive {
+    grid-template-columns: 1fr;
+  }
+
+  /* Tables: horizontal scroll */
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .table-responsive table {
+    min-width: 600px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid-responsive {
+    grid-template-columns: 1fr;
+  }
+  .page-wrapper {
+    padding: 12px;
+  }
+}

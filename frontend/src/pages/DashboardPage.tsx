@@ -178,10 +178,10 @@ export default function DashboardPage({ onNavigate, theme, onToggleTheme }: Prop
   ]
 
   return (
-    <div style={{ padding: 32 }}>
+    <div className="page-wrapper">
       {/* Header */}
       <div style={{
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32,
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32, flexWrap: 'wrap' as const, gap: 12,
       }}>
         <div>
           <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--foreground)' }}>{t('dashboardTitle')}</h1>
@@ -265,9 +265,7 @@ export default function DashboardPage({ onNavigate, theme, onToggleTheme }: Prop
       ) : (
         <>
           {/* Stats grid */}
-          <div style={{
-            display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 32,
-          }}>
+          <div className="stats-grid-responsive" style={{ marginBottom: 32 }}>
             {statCards.map(s => (
               <div key={s.label} style={{
                 background: 'var(--bg-card)',
@@ -301,7 +299,7 @@ export default function DashboardPage({ onNavigate, theme, onToggleTheme }: Prop
           </div>
 
           {/* Content grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 24 }}>
+          <div className="dashboard-grid-responsive">
             {/* Recent posts table */}
             <div style={{
               background: 'var(--bg-card)',
@@ -333,6 +331,7 @@ export default function DashboardPage({ onNavigate, theme, onToggleTheme }: Prop
                   {t('noPostsYet')}
                 </div>
               ) : (
+                <div className="table-responsive">
                 <table style={{ width: '100%', borderCollapse: 'collapse' }} role="table">
                   <thead>
                     <tr>
@@ -382,6 +381,7 @@ export default function DashboardPage({ onNavigate, theme, onToggleTheme }: Prop
                     ))}
                   </tbody>
                 </table>
+                </div>
               )}
             </div>
 

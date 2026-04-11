@@ -117,7 +117,7 @@ export default function ConnectFacebookPage() {
   const tokenSteps = [t('tokenStep1'), t('tokenStep2'), t('tokenStep3'), t('tokenStep4'), t('tokenStep5')]
 
   return (
-    <div style={{ padding: 32, maxWidth: 700 }}>
+    <div className="page-wrapper" style={{ maxWidth: 700, width: '100%' }}>
       <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--foreground)', marginBottom: 6 }}>
         {t('connectTitle')}
       </h1>

@@ -1394,7 +1394,7 @@ export default function CreatorPage() {
   ]
 
   return (
-    <div style={{ padding: 32 }}>
+    <div className="page-wrapper">
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--foreground)' }}>{t('creatorTitle')}</h1>
         <p style={{ color: 'var(--foreground-muted)', fontSize: 14, marginTop: 4 }}>

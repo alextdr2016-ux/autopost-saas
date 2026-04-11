@@ -71,22 +71,13 @@ interface Props {
   onNavigate: (p: Page) => void
   onLogout: () => void
   fbConnected?: boolean
+  mobileOpen?: boolean
 }
 
-export default function Sidebar({ currentPage, onNavigate, onLogout, fbConnected = false }: Props) {
+export default function Sidebar({ currentPage, onNavigate, onLogout, fbConnected = false, mobileOpen = false }: Props) {
   const { t } = useLanguage()
   return (
-    <aside style={{
-      width: 260,
-      background: 'var(--bg-base)',
-      borderRight: '1px solid var(--border)',
-      padding: '24px 16px',
-      display: 'flex',
-      flexDirection: 'column',
-      position: 'fixed',
-      top: 0, left: 0, bottom: 0,
-      zIndex: 10,
-    }}>
+    <aside className={`app-sidebar${mobileOpen ? ' open' : ''}`}>
       {/* Logo */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: 10,

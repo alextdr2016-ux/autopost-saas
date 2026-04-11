@@ -106,7 +106,7 @@ export default function VideosPage() {
   }
 
   return (
-    <div style={{ padding: 32 }}>
+    <div className="page-wrapper">
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--foreground)' }}>{t('videosTitle')}</h1>
         <p style={{ color: 'var(--foreground-muted)', fontSize: 14, marginTop: 4 }}>
@@ -141,7 +141,7 @@ export default function VideosPage() {
           background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8,
           padding: '14px 18px', marginBottom: 20,
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap' as const, gap: 12, marginBottom: 8 }}>
             <span style={{ fontSize: 13, fontWeight: 500, color: '#1e40af' }}>
               {t('uploading')} {uploading}
             </span>
@@ -160,7 +160,7 @@ export default function VideosPage() {
       )}
 
       <div style={{ background: 'var(--bg-card)', borderRadius: 10, border: '1px solid var(--border)', overflow: 'hidden' }}>
-        <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' as const, gap: 12 }}>
           <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--foreground)' }}>
             {t('uploadedVideos')} ({videos.length})
           </h2>

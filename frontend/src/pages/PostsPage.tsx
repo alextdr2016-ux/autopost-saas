@@ -81,15 +81,15 @@ export default function PostsPage() {
   }
 
   return (
-    <div style={{ padding: 32 }}>
-      <div style={{ marginBottom: 24, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
+    <div className="page-wrapper">
+      <div style={{ marginBottom: 24, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap' as const, gap: 12 }}>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--foreground)' }}>{t('postsPageTitle')}</h1>
           <p style={{ color: 'var(--foreground-muted)', fontSize: 14, marginTop: 4 }}>
             {counts.all} {t('totalPosts')} · {counts.success} {t('successful')} · {counts.error} {t('errors')}
           </p>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: 12 }}>
           {([['all', t('filterAll')], ['success', t('filterSuccess')], ['error', t('filterError')]] as const).map(([key, label]) => (
             <button
               key={key}
@@ -134,6 +134,7 @@ export default function PostsPage() {
         </div>
       ) : (
         <div style={{ background: 'var(--bg-card)', borderRadius: 10, border: '1px solid var(--border)', overflow: 'hidden' }}>
+          <div className="table-responsive">
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: 'var(--surface)' }}>
@@ -204,6 +205,7 @@ export default function PostsPage() {
               })}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>

@@ -126,7 +126,7 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div style={{ padding: 32, color: 'var(--foreground-muted)', fontSize: 14 }}>
+      <div className="page-wrapper" style={{ color: 'var(--foreground-muted)', fontSize: 14 }}>
         {t('loadingSettings')}
       </div>
     )
@@ -139,7 +139,7 @@ export default function SettingsPage() {
   ]
 
   return (
-    <div style={{ padding: 32, maxWidth: 680 }}>
+    <div className="page-wrapper" style={{ maxWidth: 680, width: '100%' }}>
       <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--foreground)', marginBottom: 28 }}>{t('settingsTitle')}</h1>
 
       <section style={{ background: 'var(--bg-card)', borderRadius: 10, border: '1px solid var(--border)', padding: 24, marginBottom: 20 }}>
@@ -284,7 +284,7 @@ export default function SettingsPage() {
         <p style={{ fontSize: 13, color: 'var(--foreground-muted)', marginBottom: 16 }}>
           {t('postingHoursDesc')} {times.join(', ')}
         </p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 6, marginBottom: 16 }}>
+        <div className="stats-grid-responsive" style={{ display: 'grid', gap: 6, marginBottom: 16 }}>
           {allTimes.map(time => {
             const active = times.includes(time)
             return (
