@@ -222,6 +222,15 @@ const translations = {
   clearQueue: { en: 'Clear', ro: 'Goleste' },
   howItWorks: { en: 'How it works:', ro: 'Cum functioneaza:' },
 
+  // ── Auto-post templates ──
+  autoPostLabel: { en: 'Auto', ro: 'Auto' },
+  autoPostTemplates: { en: 'Auto-post templates', ro: 'Template-uri auto-post' },
+  autoPostTemplatesDesc: { en: 'Templates marked with 🔄 will be used randomly for automatic posting.', ro: 'Template-urile marcate cu 🔄 vor fi folosite aleatoriu la postarea automata.' },
+  autoPostActive: { en: 'active for auto-posting', ro: 'active pentru postare automata' },
+  autoPostSaved: { en: 'Auto-post templates saved', ro: 'Template-uri auto-post salvate' },
+  autoPostNone: { en: 'No templates selected for auto-posting. The poster will use the fallback style.', ro: 'Niciun template selectat pentru postare automata. Posterul va folosi stilul implicit.' },
+  autoPostSaving: { en: 'Saving auto templates...', ro: 'Se salveaza template-urile auto...' },
+
   // ── Language ──
   language: { en: 'Language', ro: 'Limba' },
   english: { en: 'English', ro: 'English' },

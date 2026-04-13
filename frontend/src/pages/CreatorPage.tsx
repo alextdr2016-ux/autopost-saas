@@ -1170,6 +1170,58 @@ export default function CreatorPage() {
   const [cloudSaving, setCloudSaving] = useState(false)
   const [cloudLoading, setCloudLoading] = useState(false)
 
+  // ── Auto-post templates ──
+  const [autoTemplates, setAutoTemplates] = useState<Set<TemplateId>>(new Set())
+  const [autoSaving, setAutoSaving] = useState(false)
+  const [autoMsg, setAutoMsg] = useState('')
+
+  // Load auto-templates from cloud on mount
+  useEffect(() => {
+    const loadAutoTemplates = async () => {
+      try {
+        const headers = await getAuthHeader()
+        const res = await fetch(`${API_URL}/auto-templates`, { headers })
+        if (res.ok) {
+          const data = await res.json()
+          if (data.templates && data.templates.length > 0) {
+            setAutoTemplates(new Set(data.templates as TemplateId[]))
+          }
+        }
+      } catch { /* silently fail */ }
+    }
+    loadAutoTemplates()
+  }, [])
+
+  const toggleAutoTemplate = (id: TemplateId) => {
+    setAutoTemplates(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id); else next.add(id)
+      return next
+    })
+  }
+
+  const saveAutoTemplates = async () => {
+    setAutoSaving(true)
+    setAutoMsg('')
+    try {
+      const headers = await getAuthHeader()
+      const res = await fetch(`${API_URL}/auto-templates`, {
+        method: 'PUT',
+        headers: { ...headers, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ templates: Array.from(autoTemplates), img_fit: imgFit, format }),
+      })
+      if (res.ok) {
+        setAutoMsg(t('autoPostSaved'))
+        setTimeout(() => setAutoMsg(''), 3500)
+      } else {
+        setError(t('cloudSaveError'))
+      }
+    } catch {
+      setError(t('serverConnectionError'))
+    }
+    setAutoSaving(false)
+  }
+
   // ── Cloud save/load queue ──
   const saveQueueToCloud = async () => {
     setCloudSaving(true)
@@ -1634,22 +1686,83 @@ export default function CreatorPage() {
                       {group.label}
                     </div>
                     <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                      {TEMPLATES.filter(t => group.ids.includes(t.id)).map(t => (
-                        <button key={t.id}
-                          onClick={() => { setSelectedTemplate(t); setCustomBadgeText(t.badgeText); setCustomBadgeBg(t.badgeBg); setCustomBadgeFontSize(40) }}
-                          style={{
-                            padding: '4px 8px', borderRadius: 6, fontSize: 9, fontWeight: 600,
-                            border: selectedTemplate.id === t.id ? `2px solid ${t.accentColor}` : '1px solid var(--border)',
-                            background: selectedTemplate.id === t.id ? t.accentColor : 'var(--bg-card)',
-                            color: selectedTemplate.id === t.id ? '#fff' : 'var(--foreground-muted)',
-                            cursor: 'pointer', whiteSpace: 'nowrap',
-                          }}>
-                          {t.label}
-                        </button>
-                      ))}
+                      {TEMPLATES.filter(t => group.ids.includes(t.id)).map(t => {
+                        const isAuto = autoTemplates.has(t.id)
+                        const isSelected = selectedTemplate.id === t.id
+                        return (
+                          <div key={t.id} style={{ position: 'relative', display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                            <button
+                              onClick={() => { setSelectedTemplate(t); setCustomBadgeText(t.badgeText); setCustomBadgeBg(t.badgeBg); setCustomBadgeFontSize(40) }}
+                              style={{
+                                padding: '4px 8px', borderRadius: 6, fontSize: 9, fontWeight: 600,
+                                border: isSelected ? `2px solid ${t.accentColor}` : '1px solid var(--border)',
+                                background: isSelected ? t.accentColor : 'var(--bg-card)',
+                                color: isSelected ? '#fff' : 'var(--foreground-muted)',
+                                cursor: 'pointer', whiteSpace: 'nowrap',
+                              }}>
+                              {t.label}
+                            </button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); toggleAutoTemplate(t.id) }}
+                              title={isAuto ? 'Dezactivează auto-post' : 'Activează auto-post'}
+                              style={{
+                                padding: '1px 4px', borderRadius: 4, fontSize: 7, fontWeight: 600,
+                                border: isAuto ? '1px solid #22c55e' : '1px solid var(--border)',
+                                background: isAuto ? '#dcfce7' : 'transparent',
+                                color: isAuto ? '#15803d' : 'var(--foreground-dim)',
+                                cursor: 'pointer', lineHeight: 1.3,
+                              }}>
+                              {isAuto ? '🔄 Auto' : 'Auto'}
+                            </button>
+                          </div>
+                        )
+                      })}
                     </div>
                   </div>
                 ))}
+
+                {/* Auto-post summary + save */}
+                {autoTemplates.size > 0 && (
+                  <div style={{
+                    marginTop: 10, padding: '8px 10px', background: '#f0fdf4', border: '1px solid #bbf7d0',
+                    borderRadius: 8, fontSize: 10, color: '#15803d',
+                  }}>
+                    <div style={{ fontWeight: 600, marginBottom: 4 }}>
+                      🔄 {autoTemplates.size} {t('autoPostActive')}
+                    </div>
+                    <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 6 }}>
+                      {Array.from(autoTemplates).map(id => {
+                        const tpl = TEMPLATES.find(tp => tp.id === id)
+                        return tpl ? (
+                          <span key={id} style={{
+                            display: 'inline-flex', alignItems: 'center', gap: 3,
+                            padding: '2px 6px', background: '#dcfce7', borderRadius: 4, fontSize: 9, fontWeight: 600,
+                          }}>
+                            <span style={{ width: 7, height: 7, borderRadius: 2, background: tpl.accentColor, display: 'inline-block' }} />
+                            {tpl.label}
+                          </span>
+                        ) : null
+                      })}
+                    </div>
+                    <button onClick={saveAutoTemplates} disabled={autoSaving}
+                      style={{
+                        width: '100%', padding: '5px', background: autoSaving ? '#86efac' : '#22c55e', color: '#fff',
+                        border: 'none', borderRadius: 6, fontSize: 10, fontWeight: 600,
+                        cursor: autoSaving ? 'not-allowed' : 'pointer',
+                      }}>
+                      {autoSaving ? t('autoPostSaving') : `☁ ${t('saveToCloud')}`}
+                    </button>
+                    {autoMsg && <div style={{ marginTop: 4, fontSize: 9, color: '#15803d', fontWeight: 500 }}>✓ {autoMsg}</div>}
+                  </div>
+                )}
+                {autoTemplates.size === 0 && (
+                  <div style={{
+                    marginTop: 10, padding: '8px 10px', background: '#fffbeb', border: '1px solid #fde68a',
+                    borderRadius: 8, fontSize: 9, color: '#92400e', lineHeight: 1.4,
+                  }}>
+                    {t('autoPostTemplatesDesc')}
+                  </div>
+                )}
               </div>}
             </div>
 

@@ -248,6 +248,39 @@ def lambda_handler(event, context):
                     error_body = json.loads(e.read())
                     return {'statusCode': 400, 'headers': CORS_HEADERS, 'body': json.dumps({'error': error_body.get('error', {}).get('message', 'Eroare Facebook')})}
 
+    # ── /auto-templates ───────────────────────────────────
+    elif '/auto-templates' in path:
+        if method == 'GET':
+            response = table.query(
+                KeyConditionExpression=Key('PK').eq(f'TENANT#{tenant_id}') & Key('SK').eq('AUTO_TEMPLATES')
+            )
+            items = response.get('Items', [])
+            if items:
+                return {'statusCode': 200, 'headers': CORS_HEADERS, 'body': json.dumps({
+                    'templates': items[0].get('templates', []),
+                    'img_fit': items[0].get('img_fit', 'contain'),
+                    'format': items[0].get('format', 'facebook'),
+                }, default=str)}
+            return {'statusCode': 200, 'headers': CORS_HEADERS, 'body': json.dumps({'templates': [], 'img_fit': 'contain', 'format': 'facebook'})}
+
+        elif method in ('POST', 'PUT'):
+            body = json.loads(event.get('body', '{}'))
+            templates = body.get('templates', [])
+            img_fit = body.get('img_fit', 'contain')
+            fmt = body.get('format', 'facebook')
+
+            # Validare: fiecare element e un string (template ID)
+            clean_templates = [t for t in templates if isinstance(t, str) and t.strip()]
+
+            table.put_item(Item={
+                'PK': f'TENANT#{tenant_id}',
+                'SK': 'AUTO_TEMPLATES',
+                'templates': clean_templates,
+                'img_fit': img_fit,
+                'format': fmt,
+            })
+            return {'statusCode': 200, 'headers': CORS_HEADERS, 'body': json.dumps({'success': True, 'count': len(clean_templates)})}
+
     # ── /template-queue ───────────────────────────────────
     elif '/template-queue' in path:
         if method == 'GET':

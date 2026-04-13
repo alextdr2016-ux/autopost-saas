@@ -294,6 +294,28 @@ def download_image(url):
     return tmp.name
 
 
+# ── Auto Templates (alege random din template-urile marcate) ──────
+
+def get_auto_templates(tenant_id):
+    """Citește lista de template-uri marcate pentru auto-posting din DynamoDB."""
+    resp = table.query(
+        KeyConditionExpression=Key('PK').eq(f'TENANT#{tenant_id}') & Key('SK').eq('AUTO_TEMPLATES')
+    )
+    items = resp.get('Items', [])
+    if not items:
+        return None
+    return items[0]
+
+
+def pick_auto_template(auto_data):
+    """Alege random un template din lista de auto-templates."""
+    import random
+    templates = auto_data.get('templates', [])
+    if not templates:
+        return None
+    return random.choice(templates)
+
+
 # ── Template Queue ─────────────────────────────────────────────────
 
 def get_template_queue(tenant_id):
@@ -538,21 +560,22 @@ def process_tenant(tenant_settings, force=False):
         if not image_url:
             return {'tenant': tenant_id, 'status': 'error', 'reason': 'produs fără imagine'}
 
-        # ── Verifică coada de template-uri ──
-        queue_data = get_template_queue(tenant_id)
-        next_tpl = get_next_template(queue_data) if queue_data else None
+        # ── Verifică auto-templates (prioritate 1) apoi coada (prioritate 2) ──
         template_used = 'minimal_luxe'
+        rendered = False
 
-        if next_tpl:
-            # Rendează cu Puppeteer via template-renderer Lambda
-            tpl_id = next_tpl.get('templateId', 'frame_gold')
-            img_fit = queue_data.get('img_fit', 'contain')
-            fmt = queue_data.get('format', 'facebook')
-            logger.info(f'Folosim template din coadă: {tpl_id} (fit={img_fit}, format={fmt})')
+        # Prioritate 1: Auto-templates (alege random)
+        auto_data = get_auto_templates(tenant_id)
+        auto_tpl_id = pick_auto_template(auto_data) if auto_data else None
+
+        if auto_tpl_id:
+            img_fit = auto_data.get('img_fit', 'contain')
+            fmt = auto_data.get('format', 'facebook')
+            logger.info(f'Folosim auto-template (random): {auto_tpl_id} (fit={img_fit}, format={fmt})')
 
             try:
                 jpeg_bytes = render_template_via_lambda(
-                    template_id=tpl_id,
+                    template_id=auto_tpl_id,
                     image_url=image_url,
                     product_name=get_short_name(product['name']),
                     img_fit=img_fit,
@@ -561,17 +584,45 @@ def process_tenant(tenant_settings, force=False):
                 banner_path = tempfile.mktemp(suffix='.jpg')
                 with open(banner_path, 'wb') as f:
                     f.write(jpeg_bytes)
-                template_used = tpl_id
-
-                # Avansează contorul cozii
-                advance_queue(tenant_id, queue_data, next_tpl.get('id', ''))
-                logger.info(f'Template {tpl_id} randat cu succes, contor avansat')
+                template_used = auto_tpl_id
+                rendered = True
+                logger.info(f'Auto-template {auto_tpl_id} randat cu succes')
 
             except Exception as e:
-                logger.warning(f'Renderer Lambda eșuat ({e}), fallback pe Pillow')
-                next_tpl = None  # fallback
+                logger.warning(f'Renderer Lambda eșuat pentru auto-template ({e}), fallback')
 
-        if not next_tpl:
+        # Prioritate 2: Coada cu contoare (dacă nu s-a folosit auto-template)
+        if not rendered:
+            queue_data = get_template_queue(tenant_id)
+            next_tpl = get_next_template(queue_data) if queue_data else None
+
+            if next_tpl:
+                tpl_id = next_tpl.get('templateId', 'frame_gold')
+                img_fit = queue_data.get('img_fit', 'contain')
+                fmt = queue_data.get('format', 'facebook')
+                logger.info(f'Folosim template din coadă: {tpl_id} (fit={img_fit}, format={fmt})')
+
+                try:
+                    jpeg_bytes = render_template_via_lambda(
+                        template_id=tpl_id,
+                        image_url=image_url,
+                        product_name=get_short_name(product['name']),
+                        img_fit=img_fit,
+                        fmt=fmt,
+                    )
+                    banner_path = tempfile.mktemp(suffix='.jpg')
+                    with open(banner_path, 'wb') as f:
+                        f.write(jpeg_bytes)
+                    template_used = tpl_id
+                    rendered = True
+
+                    advance_queue(tenant_id, queue_data, next_tpl.get('id', ''))
+                    logger.info(f'Template {tpl_id} randat cu succes, contor avansat')
+
+                except Exception as e:
+                    logger.warning(f'Renderer Lambda eșuat ({e}), fallback pe Pillow')
+
+        if not rendered:
             # Fallback: banner Pillow (Minimal Luxe)
             image_path = download_image(image_url)
             banner_path = tempfile.mktemp(suffix='.jpg')
@@ -579,7 +630,7 @@ def process_tenant(tenant_settings, force=False):
             generate_banner(image_path, banner_path, product['name'], brand)
 
         # Caption
-        caption = f'✨ {get_short_name(product["name"])}\n\nDescopera acum 👇\n{product["link"]}'
+        caption = f'✨ {get_short_name(product["name"])}\n\n📍Online pe\n{product["link"]}'
 
         # Postare Facebook
         fb_post_id = post_photo_to_facebook(page_id, page_token, banner_path, caption)
