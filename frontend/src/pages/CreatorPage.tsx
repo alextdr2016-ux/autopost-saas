@@ -1206,7 +1206,7 @@ export default function CreatorPage() {
     try {
       const headers = await getAuthHeader()
       const res = await fetch(`${API_URL}/auto-templates`, {
-        method: 'PUT',
+        method: 'POST',
         headers: { ...headers, 'Content-Type': 'application/json' },
         body: JSON.stringify({ templates: Array.from(autoTemplates), img_fit: imgFit, format }),
       })
