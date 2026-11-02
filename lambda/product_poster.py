@@ -29,7 +29,7 @@ from zoneinfo import ZoneInfo
 import boto3
 import requests
 from boto3.dynamodb.conditions import Attr, Key
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -43,6 +43,7 @@ GRAPH_API = 'https://graph.facebook.com/v21.0'
 BUCKET = 'autopost-media'
 RENDERER_LAMBDA = os.environ.get('RENDERER_LAMBDA', 'autopost-template-renderer')
 lambda_client = boto3.client('lambda', region_name='eu-central-1')
+s3 = boto3.client('s3', region_name='eu-central-1')
 
 # ── Banner ─────────────────────────────────────────────────────────
 GOLD = '#C9A84C'
@@ -93,22 +94,23 @@ def already_posted_product_today(tenant_id):
     return len(resp.get('Items', [])) > 0
 
 
-def get_posted_product_ids(tenant_id, days=90):
-    """Produse deja postate în ultimele N zile — evităm repetiția."""
-    from datetime import timedelta
-    start_ts = (datetime.utcnow() - timedelta(days=days)).strftime('%Y-%m-%d')
-    resp = table.query(
-        KeyConditionExpression=Key('PK').eq(f'TENANT#{tenant_id}')
+def get_post_history(tenant_id):
+    """Ultima postare a fiecărui produs: {product_id: (data 'YYYY-MM-DD', nume)}."""
+    kwargs = {
+        'KeyConditionExpression': Key('PK').eq(f'TENANT#{tenant_id}')
             & Key('SK').begins_with('POST#PRODUCT#'),
-    )
-    posted = set()
-    for item in resp.get('Items', []):
-        date_part = item.get('SK', '').replace('POST#PRODUCT#', '')[:10]
-        if date_part >= start_ts:
-            pid = item.get('product_id', '')
-            if pid:
-                posted.add(str(pid))
-    return posted
+    }
+    history = {}
+    while True:
+        resp = table.query(**kwargs)
+        for item in resp.get('Items', []):
+            pid = str(item.get('product_id', ''))
+            date_part = item.get('SK', '').replace('POST#PRODUCT#', '')[:10]
+            if pid and date_part >= history.get(pid, ('', ''))[0]:
+                history[pid] = (date_part, item.get('product_name', ''))
+        if 'LastEvaluatedKey' not in resp:
+            return history
+        kwargs['ExclusiveStartKey'] = resp['LastEvaluatedKey']
 
 
 def log_product_post(tenant_id, product_id, product_name, fb_post_id, site_type, error=None):
@@ -223,24 +225,38 @@ def fetch_products_woo(site_url, consumer_key=None, consumer_secret=None):
     return products
 
 
-def select_product(products, posted_ids):
-    """Alege produsul: nepostat, stoc > 0, randomizare în top 10."""
+def model_key(name):
+    """'Rochie Anastasia verde cu drapaj' → 'rochie anastasia' (același model, orice culoare)."""
+    return ' '.join(name.lower().split()[:2])
+
+
+def select_product(products, history, days=90, model_days=14, today=None):
+    """
+    Alege la întâmplare dintre produsele cu stoc nepostate în ultimele `days` zile
+    (noi sau revenite pe stoc, fără preferință după vechime), sărind modelele
+    postate în ultimele `model_days` zile în orice culoare.
+    """
     import random
+    from datetime import timedelta
+    today = today or datetime.utcnow()
+    product_cutoff = (today - timedelta(days=days)).strftime('%Y-%m-%d')
+    model_cutoff = (today - timedelta(days=model_days)).strftime('%Y-%m-%d')
+    recent_models = {model_key(name) for date, name in history.values() if date >= model_cutoff}
+
     with_stock = [p for p in products if (p.get('stock') or 0) > 0]
     if not with_stock:
         with_stock = products  # fallback
 
-    unposted = [p for p in with_stock if p['id'] not in posted_ids]
-    candidates = unposted if unposted else with_stock
+    last_post = lambda p: history.get(p['id'], ('', ''))[0]
+    eligible = [p for p in with_stock if last_post(p) < product_cutoff]
+    fresh_models = [p for p in eligible if model_key(p['name']) not in recent_models]
 
-    # Sortează după id descrescător (produse noi primele)
-    try:
-        candidates.sort(key=lambda p: int(p['id']), reverse=True)
-    except (ValueError, TypeError):
-        pass
-
-    top = candidates[:10]
-    return random.choice(top) if top else candidates[0]
+    if fresh_models:
+        return random.choice(fresh_models)
+    if eligible:
+        return random.choice(eligible)
+    # Toate postate recent → cel postat cel mai demult
+    return min(with_stock, key=last_post)
 
 
 def extract_brand(site_url):
@@ -360,6 +376,41 @@ def advance_queue(tenant_id, queue_data, template_item_id):
     })
 
 
+# ── Campanii (ramă proprie + text fix, între două date) ────────────
+
+def get_active_campaign(tenant_id, tz_name, today=None):
+    """
+    Campania activă azi sau None. Item DynamoDB SK=CAMPAIGN#{slug} cu
+    start_date (inclusiv), end_date (prima zi normală), caption, frame_key, bg_color.
+    """
+    today = today or datetime.now(ZoneInfo(tz_name)).strftime('%Y-%m-%d')
+    resp = table.query(
+        KeyConditionExpression=Key('PK').eq(f'TENANT#{tenant_id}') & Key('SK').begins_with('CAMPAIGN#')
+    )
+    for item in resp.get('Items', []):
+        if item.get('start_date', '') <= today < item.get('end_date', ''):
+            return item
+    return None
+
+
+def compose_campaign_banner(product_img, frame, bg_color):
+    """Produsul întreg (fit) în zona transparentă a ramei, rama deasupra."""
+    x0, y0, x1, y1 = ImageOps.invert(frame.getchannel('A')).getbbox()
+    inner = fit_image(product_img, x1 - x0, y1 - y0, bg=bg_color)
+    canvas = Image.new('RGBA', frame.size, bg_color)
+    canvas.paste(inner, (x0, y0))
+    return Image.alpha_composite(canvas, frame).convert('RGB')
+
+
+def render_campaign_banner(image_path, campaign, output_path):
+    """Rama PNG din S3 + poza produsului → JPEG pătrat pentru campanie."""
+    frame_obj = s3.get_object(Bucket=BUCKET, Key=campaign['frame_key'])
+    frame = Image.open(BytesIO(frame_obj['Body'].read())).convert('RGBA')
+    product = Image.open(image_path).convert('RGB')
+    banner = compose_campaign_banner(product, frame, campaign.get('bg_color', '#f7f7f7'))
+    banner.save(output_path, 'JPEG', quality=92)
+
+
 def render_template_via_lambda(template_id, image_url, product_name, product_price='',
                                 promo_text='', img_fit='contain', fmt='facebook', bg_color='#e5e7eb'):
     """Invocă Lambda-ul template-renderer (Puppeteer) și returnează JPEG bytes."""
@@ -388,13 +439,13 @@ def render_template_via_lambda(template_id, image_url, product_name, product_pri
 
 # ── Banner Generation (fallback Pillow) ───────────────────────────
 
-def fit_image(img, target_w, target_h):
-    """Imagine completă vizibilă (fit), centrat pe fundal crem."""
+def fit_image(img, target_w, target_h, bg=CREAM):
+    """Imagine completă vizibilă (fit), centrat pe fundal (implicit crem)."""
     w, h = img.size
     scale = min(target_w / w, target_h / h)
     new_w, new_h = int(w * scale), int(h * scale)
     img = img.resize((new_w, new_h), Image.LANCZOS)
-    canvas = Image.new('RGB', (target_w, target_h), CREAM)
+    canvas = Image.new('RGB', (target_w, target_h), bg)
     canvas.paste(img, ((target_w - new_w) // 2, (target_h - new_h) // 2))
     return canvas.convert('RGBA')
 
@@ -545,8 +596,8 @@ def process_tenant(tenant_settings, force=False):
         return {'tenant': tenant_id, 'status': 'error', 'reason': f'fetch produse: {str(e)}'}
 
     # Selectare produs
-    posted_ids = get_posted_product_ids(tenant_id)
-    product = select_product(products, posted_ids)
+    history = get_post_history(tenant_id)
+    product = select_product(products, history)
     logger.info(f'Produs selectat: {product["name"]} (id={product["id"]})')
 
     image_path = None
@@ -560,15 +611,31 @@ def process_tenant(tenant_settings, force=False):
         if not image_url:
             return {'tenant': tenant_id, 'status': 'error', 'reason': 'produs fără imagine'}
 
-        # ── Verifică auto-templates (prioritate 1) apoi coada (prioritate 2) ──
+        caption = f'✨ {get_short_name(product["name"])}\n\n📍Online pe\n{product["link"]}'
+
+        # ── Campanie activă (prioritate 0), auto-templates (1), coada (2) ──
         template_used = 'minimal_luxe'
         rendered = False
+
+        # Prioritate 0: Campanie (ramă proprie + text fix)
+        campaign = get_active_campaign(tenant_id, timezone_name)
+        if campaign:
+            logger.info(f'Campanie activă: {campaign["SK"]}')
+            try:
+                image_path = download_image(image_url)
+                banner_path = tempfile.mktemp(suffix='.jpg')
+                render_campaign_banner(image_path, campaign, banner_path)
+                template_used = campaign['SK'].replace('CAMPAIGN#', 'campaign:')
+                caption = campaign['caption']
+                rendered = True
+            except Exception as e:
+                logger.warning(f'Campanie eșuată ({e}), fallback pe template-uri')
 
         # Prioritate 1: Auto-templates (alege random)
         auto_data = get_auto_templates(tenant_id)
         auto_tpl_id = pick_auto_template(auto_data) if auto_data else None
 
-        if auto_tpl_id:
+        if auto_tpl_id and not rendered:
             img_fit = auto_data.get('img_fit', 'contain')
             fmt = auto_data.get('format', 'facebook')
             logger.info(f'Folosim auto-template (random): {auto_tpl_id} (fit={img_fit}, format={fmt})')
@@ -624,13 +691,10 @@ def process_tenant(tenant_settings, force=False):
 
         if not rendered:
             # Fallback: banner Pillow (Minimal Luxe)
-            image_path = download_image(image_url)
+            image_path = image_path or download_image(image_url)
             banner_path = tempfile.mktemp(suffix='.jpg')
             brand = extract_brand(site_url if site_type != 'shopify' else product.get('link', site_url))
             generate_banner(image_path, banner_path, product['name'], brand)
-
-        # Caption
-        caption = f'✨ {get_short_name(product["name"])}\n\n📍Online pe\n{product["link"]}'
 
         # Postare Facebook
         fb_post_id = post_photo_to_facebook(page_id, page_token, banner_path, caption)
